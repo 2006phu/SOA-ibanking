@@ -24,7 +24,7 @@ SEED_USERS = [
         "password": "235780",
         "full_name": "Lê Phú",
         "phone": "0987654321",
-        "email": "lephu@tdtu.edu.vn",
+        "email": "524h0121@student.tdtu.edu.vn",
         "balance": 80000000.00  # 80 triệu
     },
     {

@@ -345,22 +345,6 @@ const TuitionPayment = () => {
             Mã OTP đã được gửi đến email <strong>{user.email}</strong> của bạn
           </p>
           
-          {demoOtp && (
-            <div style={{
-              background: '#e8f0fe',
-              border: '1px solid #1a73e8',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              margin: '10px auto 16px',
-              maxWidth: '380px',
-              color: '#174ea6',
-              textAlign: 'center'
-            }}>
-              <span style={{ fontSize: '0.9rem' }}>Mã OTP của bạn: </span>
-              <strong style={{ fontSize: '1.25rem', letterSpacing: '4px', color: '#1a73e8', marginLeft: '6px' }}>{demoOtp}</strong>
-            </div>
-          )}
-          
           <div className="otp-container">
             {otp.map((data, index) => (
               <input
