@@ -10,31 +10,53 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (token) {
+  const fetchUser = async () => {
+    if (token) {
+      try {
+        const userData = await axiosClient.get('/users/me');
+        setUser(userData);
+      } catch (error) {
+        console.error("Failed to fetch user from /users/me, falling back to /auth/me:", error);
         try {
-          const userData = await axiosClient.get('/auth/me');
-          setUser(userData);
-        } catch (error) {
-          console.error("Failed to fetch user:", error);
+          const authData = await axiosClient.get('/auth/me');
+          setUser(authData);
+        } catch (authError) {
           localStorage.removeItem('token');
           setToken(null);
           setUser(null);
         }
       }
-      setLoading(false);
-    };
+    }
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchUser();
   }, [token]);
+
+  const refreshUser = async () => {
+    if (token) {
+      try {
+        const userData = await axiosClient.get('/users/me');
+        setUser(userData);
+        return userData;
+      } catch (error) {
+        console.error("Failed to refresh user:", error);
+      }
+    }
+  };
 
   const login = async (username, password) => {
     const response = await axiosClient.post('/auth/login', { username, password });
     const { access_token: token, user: userData } = response;
     localStorage.setItem('token', token);
     setToken(token);
-    setUser(userData);
+    try {
+      const liveUser = await axiosClient.get('/users/me');
+      setUser(liveUser);
+    } catch {
+      setUser(userData);
+    }
     return response;
   };
 
@@ -49,6 +71,7 @@ export const AuthProvider = ({ children }) => {
     token,
     login,
     logout,
+    refreshUser,
     isAuthenticated: !!token,
     loading
   };
