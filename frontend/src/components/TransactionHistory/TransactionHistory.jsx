@@ -67,15 +67,15 @@ const TransactionHistory = () => {
                 </thead>
                 <tbody>
                   {transactions.map((tx, index) => {
-                    const statusInfo = formatTransactionStatus(tx.status);
+                    const statusInfo = formatTransactionStatus(tx.status || 'SUCCESS');
                     return (
-                      <tr key={tx.id || index}>
+                      <tr key={tx.id || tx.transaction_id || index}>
                         <td>{(page - 1) * size + index + 1}</td>
-                        <td className="tx-id">{tx.transaction_id}</td>
-                        <td>{tx.mssv}</td>
-                        <td>{tx.student_name}</td>
+                        <td className="tx-id">{tx.id || tx.transaction_id}</td>
+                        <td>{tx.mssv || '---'}</td>
+                        <td>{tx.student_name || '---'}</td>
                         <td className="amount">{formatCurrency(tx.amount)}</td>
-                        <td>{formatDateTime(tx.created_at)}</td>
+                        <td>{formatDateTime(tx.created_at || tx.completed_at)}</td>
                         <td>
                           <span className={`status-badge ${statusInfo.className}`}>
                             {statusInfo.label}

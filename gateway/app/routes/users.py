@@ -40,11 +40,14 @@ async def get_my_balance(request: Request):
 @router.get("/me/transactions")
 async def get_my_transactions(request: Request):
     """
-    Get current user transaction history from User Service.
+    Get current user transaction history from Payment Service with full details.
     Converts 'me' to the actual user_id from the verified JWT before forwarding.
     """
     user_id = getattr(request.state, "user_id", None)
-    target_url = f"{settings.USER_SERVICE_URL}/api/users/{user_id}/transactions"
+    query_params = str(request.url.query)
+    target_url = f"{settings.PAYMENT_SERVICE_URL}/api/payments/user/{user_id}"
+    if query_params:
+        target_url += f"?{query_params}"
     return await proxy_request(
         method="GET",
         target_url=target_url,
