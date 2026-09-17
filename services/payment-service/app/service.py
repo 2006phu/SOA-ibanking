@@ -200,12 +200,15 @@ class PaymentService:
 
         # 3. Call OTP Service: POST /api/otp/generate
         otp_url = f"{settings.OTP_SERVICE_URL}/api/otp/generate"
+        otp_code = None
         try:
-            await call_service(
+            otp_res = await call_service(
                 "POST",
                 otp_url,
                 json={"transaction_id": str(tx.id), "email": target_email},
             )
+            if isinstance(otp_res, dict):
+                otp_code = otp_res.get("otp_code")
         except httpx.HTTPStatusError as e:
             logger.error(f"OTP generation failed: {e.response.status_code} - {e.response.text}")
             raise HTTPException(
@@ -223,8 +226,8 @@ class PaymentService:
         tx.status = "OTP_SENT"
         await db.commit()
         await db.refresh(tx)
-        logger.info(f"Transaction {tx.id} transitioned to OTP_SENT")
-        return tx
+        logger.info(f"Transaction {tx.id} transitioned to OTP_SENT with OTP code: {otp_code}")
+        return tx, otp_code
 
     @staticmethod
     async def verify_otp_and_pay(

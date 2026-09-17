@@ -79,7 +79,7 @@ async def confirm_payment(
 ):
     """Confirm payment transaction, request OTP from OTP service, and update status to OTP_SENT."""
     email = request.email if request else None
-    tx = await PaymentService.confirm_payment(
+    tx, otp_code = await PaymentService.confirm_payment(
         db=db,
         transaction_id=transaction_id,
         user_id=user_id,
@@ -89,6 +89,7 @@ async def confirm_payment(
         transaction_id=tx.id,
         status=tx.status,
         message="OTP has been sent to your email",
+        otp_code=otp_code,
     )
 
 

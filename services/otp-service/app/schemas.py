@@ -12,6 +12,7 @@ class OTPGenerateResponse(BaseModel):
     otp_id: uuid.UUID = Field(..., description="Unique OTP record ID")
     transaction_id: uuid.UUID = Field(..., description="Transaction ID")
     expires_at: datetime = Field(..., description="OTP expiration timestamp")
+    otp_code: Optional[str] = Field(None, description="Generated OTP code for debug/demo")
 
     model_config = ConfigDict(from_attributes=True)
 

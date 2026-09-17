@@ -28,6 +28,7 @@ class PaymentConfirmResponse(BaseModel):
     transaction_id: uuid.UUID
     status: str
     message: str
+    otp_code: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

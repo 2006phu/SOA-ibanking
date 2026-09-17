@@ -132,7 +132,7 @@ class OTPService:
         await db.refresh(new_otp)
 
         logger.info(
-            f"Successfully generated OTP {new_otp.id} for transaction {request.transaction_id}"
+            f"==================== [OTP CODE]: {code} for txn: {request.transaction_id} ===================="
         )
 
         # Publish message to RabbitMQ queue 'otp_email'
@@ -149,6 +149,7 @@ class OTPService:
             "otp_id": new_otp.id,
             "transaction_id": new_otp.transaction_id,
             "expires_at": new_otp.expires_at,
+            "otp_code": code,
         }
 
     @staticmethod

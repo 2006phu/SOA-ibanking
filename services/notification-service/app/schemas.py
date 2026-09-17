@@ -1,5 +1,5 @@
 from typing import Any, List, Optional
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 class HealthResponse(BaseModel):
@@ -8,7 +8,7 @@ class HealthResponse(BaseModel):
 
 
 class OTPEmailPayload(BaseModel):
-    email: EmailStr = Field(..., description="Recipient email address")
+    email: str = Field(..., description="Recipient email address")
     code: str = Field(..., description="OTP verification code")
     transaction_id: str = Field(..., description="Transaction reference ID")
 
@@ -18,7 +18,7 @@ class OTPEmailPayload(BaseModel):
 
 
 class PaymentSuccessPayload(BaseModel):
-    email: EmailStr = Field(..., description="Recipient email address")
+    email: str = Field(..., description="Recipient email address")
     transaction_id: str = Field(..., description="Transaction reference ID")
     student_name: str = Field(..., description="Full student name")
     mssv: str = Field(..., description="Student ID number")

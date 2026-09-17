@@ -26,6 +26,7 @@ const TuitionPayment = () => {
   const [transactionId, setTransactionId] = useState(null);
   const [isInitiating, setIsInitiating] = useState(false);
   const [confirmError, setConfirmError] = useState('');
+  const [demoOtp, setDemoOtp] = useState('');
   
   // OTP state
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -92,20 +93,27 @@ const TuitionPayment = () => {
     setConfirmError('');
     
     try {
+      // 1. Khởi tạo giao dịch
       const response = await axiosClient.post('/payments/initiate', {
         mssv: studentInfo.mssv,
         tuition_fee_id: selectedFee.id
       });
       
-      setTransactionId(response.transaction_id);
+      const txnId = response.transaction_id;
+      setTransactionId(txnId);
       
-      // Assume OTP is requested here or as part of initiate
-      // Next, move to OTP step
+      // 2. Gọi confirm để sinh mã OTP và đẩy qua RabbitMQ
+      const confirmRes = await axiosClient.post(`/payments/${txnId}/confirm`);
+      if (confirmRes && confirmRes.otp_code) {
+        setDemoOtp(confirmRes.otp_code);
+      }
+      
+      // 3. Chuyển sang bước nhập OTP
       setStep(3);
       setTimer(300); // Reset timer to 5 minutes
       setOtp(['', '', '', '', '', '']);
     } catch (error) {
-      setConfirmError(error.response?.data?.message || 'Không thể khởi tạo giao dịch.');
+      setConfirmError(error.response?.data?.detail || error.response?.data?.message || 'Không thể khởi tạo giao dịch.');
     } finally {
       setIsInitiating(false);
     }
@@ -169,6 +177,7 @@ const TuitionPayment = () => {
     setStudentInfo(null);
     setSelectedFee(null);
     setIsAgreed(false);
+    setDemoOtp('');
     setResult(null);
   };
 
@@ -335,6 +344,22 @@ const TuitionPayment = () => {
           <p className="otp-message">
             Mã OTP đã được gửi đến email <strong>{user.email}</strong> của bạn
           </p>
+          
+          {demoOtp && (
+            <div style={{
+              background: '#e8f0fe',
+              border: '1px solid #1a73e8',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              margin: '10px auto 16px',
+              maxWidth: '380px',
+              color: '#174ea6',
+              textAlign: 'center'
+            }}>
+              <span style={{ fontSize: '0.9rem' }}>Mã OTP của bạn: </span>
+              <strong style={{ fontSize: '1.25rem', letterSpacing: '4px', color: '#1a73e8', marginLeft: '6px' }}>{demoOtp}</strong>
+            </div>
+          )}
           
           <div className="otp-container">
             {otp.map((data, index) => (
