@@ -59,13 +59,22 @@ const TuitionPayment = () => {
     
     try {
       const response = await axiosClient.get(`/tuition/${mssv}`);
-      if (response && response.data) {
-        setStudentInfo(response.data);
+      if (response) {
+        setStudentInfo({
+          mssv: response.mssv,
+          full_name: response.student_name,
+          program: response.program,
+          unpaid_fees: (response.tuition_fees || []).filter(f => f.status === 'UNPAID')
+        });
       } else {
         setSearchError('Không tìm thấy thông tin sinh viên.');
       }
     } catch (error) {
-      setSearchError(error.response?.data?.message || 'Có lỗi xảy ra khi tra cứu học phí.');
+      if (error.response?.status === 404) {
+        setSearchError('Không tìm thấy sinh viên với MSSV này.');
+      } else {
+        setSearchError(error.response?.data?.detail || 'Có lỗi xảy ra khi tra cứu học phí.');
+      }
     } finally {
       setIsSearching(false);
     }
