@@ -1,0 +1,46 @@
+KỊCH BẢN THUYẾT TRÌNH - TẬP TRUNG VÀO PHÂN TÍCH SƠ ĐỒ VÀ LUỒNG HOẠT ĐỘNG
+
+---
+Slide 1: Lời chào và Giới thiệu
+"Kính chào thầy Dương Hữu Phúc và các bạn. Hôm nay, nhóm SOA.26-19 xin trình bày báo cáo giữa kỳ môn Kiến trúc Hướng Dịch vụ. Đề tài của nhóm là Hệ thống thanh toán học phí trực tuyến iBanking, được thiết kế chuyên sâu trên nền tảng Microservices."
+
+---
+Slide 2: Thành viên nhóm
+"Nhóm gồm 2 thành viên là Lê Phú và Vũ Giang Huy. Công việc được phân chia rõ ràng để bao quát toàn bộ từ khâu phân tích thiết kế, vẽ lược đồ, cho đến lập trình backend, frontend và triển khai hệ thống."
+
+---
+Slide 3: Tổng quan & Sơ đồ Usecase
+"Nhìn vào sơ đồ Usecase trên slide, mọi người có thể thấy luồng tương tác chính. Ở bên trái, người dùng (Sinh viên hoặc Phụ huynh) sẽ thao tác tuần tự từ đăng nhập, xem số dư, đến khởi tạo thanh toán và nhập OTP. 
+Tuy nhiên, điểm nhấn nằm ở bên phải màn hình: Hệ thống của chúng em không đứng độc lập mà có sự kết nối với 2 hệ thống ngoại vi (External Systems) là RabbitMQ và Gmail SMTP. Việc tách các hệ thống này ra khỏi cụm tính toán chính giúp hệ thống xử lý các tác vụ nặng (như gửi email) một cách bất đồng bộ, không bao giờ bị nghẽn."
+
+---
+Slide 4: Sơ đồ Kiến trúc Microservices
+"Mời thầy và các bạn xem sơ đồ kiến trúc tổng thể. Từ tầng Frontend trên cùng, mọi request đều phải đi qua 'chốt chặn' API Gateway. Gateway sẽ lo việc xác thực token và định tuyến mũi tên request xuống đúng 6 Microservices bên dưới. 
+Nhìn vào nửa dưới của sơ đồ, các bạn sẽ thấy tầng Database. Chúng em áp dụng triệt để nguyên tắc Database-per-service: 5 khối database PostgreSQL hoàn toàn tách biệt. Các service không dùng chung DB, mà chúng phải giao tiếp với nhau qua HTTP REST API hoặc qua Message Broker RabbitMQ ở bên phải."
+
+---
+Slide 5: Luồng hoạt động Thanh toán (Core Workflow)
+"Đi sâu vào luồng thanh toán, quá trình này là một chuỗi phối hợp nhịp nhàng. Khởi đầu, Payment Service đóng vai trò tiếp nhận và gọi chéo sang User/Tuition để kiểm tra chéo điều kiện. Tiếp đến là cụm OTP: Hệ thống sinh mã, ném sự kiện vào RabbitMQ để gửi Email. Cuối cùng và quan trọng nhất là cụm Thực thi (Execution): Tài khoản bị trừ tiền và học phí được gạch nợ. Quá trình này đòi hỏi đường đi của request phải được kiểm soát cực kỳ nghiêm ngặt."
+
+---
+Slide 6: Sơ đồ Tuần tự & Saga Pattern (Điểm nhấn quan trọng nhất)
+"Đây là Sơ đồ tuần tự (Sequence Diagram) thể hiện phần lõi phức tạp nhất của dự án. Mời mọi người tập trung vào nửa dưới sơ đồ (khu vực Critical Section màu đen). 
+Ở đây, Payment Service đang đóng vai trò 'nhạc trưởng' (Orchestrator). Đầu tiên, Payment bắn mũi tên gọi User Service trừ tiền -> Thành công. Tiếp tục, Payment bắn mũi tên gọi Tuition Service để gạch nợ. 
+Sẽ ra sao nếu Tuition báo lỗi (ví dụ do có người nộp trước)? Lúc này, mũi tên nét đứt (409 Conflict) sẽ dội ngược về Payment. Ngay lập tức, Payment Service kích hoạt kịch bản Rollback (Bù đắp), nó bắn một mũi tên gọi hàm Refund sang User Service để hoàn lại 100% tiền. Sơ đồ này minh chứng rõ ràng việc hệ thống của chúng em đảm bảo tuyệt đối tính toàn vẹn dữ liệu (ACID) dù không dùng chung Database."
+
+---
+Slide 7: Xử lý Tương tranh (Pessimistic Locking)
+"Cũng trong lúc thực thi các mũi tên ở sơ đồ tuần tự vừa rồi, hệ thống phải đối mặt với lỗi Tương tranh (Concurrency). Cách xử lý là chèn thêm lệnh `SELECT ... FOR UPDATE` trực tiếp vào Database. Lệnh này khóa cứng dòng tiền của sinh viên lại, bắt mọi request đến sau phải xếp hàng. Nhờ vậy, lỗi 'Double-spending' (nhấn đúp 2 lần thanh toán) được xử lý triệt để."
+
+---
+Slide 8: Giao tiếp bất đồng bộ (Asynchronous)
+"Quay lại với sơ đồ kiến trúc ban đầu, khối RabbitMQ đóng vai trò làm hàng đợi. Thay vì gọi API trực tiếp để gửi Email khiến request bị treo mất 3-4 giây, Payment và OTP service chỉ việc ném dữ liệu vào hàng đợi và trả kết quả ngay cho người dùng. Khối Notification Service sẽ tự động nhặt các sự kiện này và gửi thư qua SMTP."
+
+---
+Slide 9: Lược đồ Cơ sở dữ liệu (ERD)
+"Tiếp theo là sơ đồ thiết kế CSDL (ERD). Vì hệ thống không có khóa ngoại (Foreign Key) chéo giữa các service, chúng em phải thiết kế phân rã dữ liệu hợp lý. Ở chính giữa sơ đồ là bảng Transaction của Payment Service, nó lưu trữ toàn bộ UserID, TuitionID, và số dư trước/sau để làm căn cứ đối soát lịch sử độc lập. Đặc biệt, bảng này có trường Idempotency Key giúp chặn đứng mọi request thanh toán trùng lặp từ Frontend dội xuống."
+
+---
+Slide 10 & 11: Đánh giá & Mức độ hoàn thành
+"Nhìn chung, hệ thống giải quyết trọn vẹn các bài toán khó nhất của thiết kế phân tán: Toàn vẹn dữ liệu, Tương tranh và Hiệu năng bất đồng bộ. Nhóm tự tin đã hoàn thành 100% các tiêu chí khắt khe của đồ án. 
+Sau đây, nhóm xin phép được Demo trực tiếp trên giao diện và chạy Script tự động giả lập người dùng bắn phá hệ thống để chứng minh tính năng chống tương tranh. Cảm ơn thầy và các bạn đã lắng nghe!"
