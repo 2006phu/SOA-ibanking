@@ -57,6 +57,8 @@ paginate: true
 5. **Execution:** Payment Service deducts the balance and updates the tuition status to `PAID`.
 6. **Notification:** On success, an e-receipt is sent via Email.
 
+![bg right:45% 90%](diagrams/so_do_workflow.jpg)
+
 ---
 
 # Distributed Transaction (Saga Pattern)
