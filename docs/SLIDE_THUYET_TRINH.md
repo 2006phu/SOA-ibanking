@@ -47,9 +47,21 @@ paginate: true
 
 ---
 
+# Core Operation Flow (Payment Workflow)
+
+**Step-by-step execution of a tuition payment:**
+1. **Initiation:** User selects a tuition fee. Frontend sends an initiation request to Payment Service.
+2. **Validation:** Payment Service cross-checks tuition status (Tuition Service) and user balance (User Service).
+3. **OTP Generation:** If valid, OTP Service generates a code and sends it via Email (asynchronously via RabbitMQ).
+4. **Confirmation:** User enters the OTP.
+5. **Execution:** Payment Service deducts the balance and updates the tuition status to `PAID`.
+6. **Notification:** On success, an e-receipt is sent via Email.
+
+---
+
 # Distributed Transaction (Saga Pattern)
 
-**Problem:** Ensuring data consistency across multiple DBs (Deducting balance in User DB and updating status in Tuition DB).
+**Problem:** Ensuring data consistency across multiple DBs during the Execution phase.
 - **Orchestration Mechanism:** Payment Service acts as the central orchestrator.
 - **Rollback (Compensation):** 
   - If money deduction succeeds but tuition update fails (e.g., already paid by someone else), Payment Service calls User Service to process a **Refund**.
