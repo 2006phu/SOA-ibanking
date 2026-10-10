@@ -30,17 +30,17 @@ def draw_workflow():
     
     # Định nghĩa các bước
     steps = [
-        {"actor": "FRONTEND", "action": "Khởi tạo thanh toán học phí", "desc": "Gửi MSSV và Mã Học Phí"},
-        {"actor": "API GATEWAY", "action": "Xác thực & Forward Request", "desc": "Check JWT & X-Correlation-ID"},
-        {"actor": "PAYMENT SERVICE", "action": "Validate Điều kiện", "desc": "Check User Balance >= Amount\nCheck Tuition == UNPAID"},
-        {"actor": "OTP SERVICE", "action": "Tạo mã OTP", "desc": "Lưu DB & Publish event 'otp_email'"},
-        {"actor": "NOTIFICATION SERVICE", "action": "Gửi Email OTP", "desc": "Gửi mã qua SMTP đến sinh viên"},
-        {"actor": "FRONTEND", "action": "Nhập & Gửi OTP", "desc": "User nhập mã OTP gồm 6 chữ số"},
-        {"actor": "OTP SERVICE", "action": "Xác thực OTP", "desc": "Check hợp lệ & thời hạn (5 phút)"},
-        {"actor": "USER SERVICE", "action": "Trừ tiền (Execution 1)", "desc": "SELECT ... FOR UPDATE\nTrừ số dư tài khoản"},
-        {"actor": "TUITION SERVICE", "action": "Cập nhật học phí (Execution 2)", "desc": "SELECT ... FOR UPDATE\nĐổi trạng thái thành PAID"},
-        {"actor": "PAYMENT SERVICE", "action": "Hoàn tất Giao dịch", "desc": "Lưu lịch sử & Publish event 'payment_success'"},
-        {"actor": "NOTIFICATION SERVICE", "action": "Gửi Email Biên lai", "desc": "Gửi hóa đơn điện tử cho user"}
+        {"actor": "FRONTEND", "action": "Initiate Tuition Payment", "desc": "Send Student ID & Tuition Fee ID"},
+        {"actor": "API GATEWAY", "action": "Authenticate & Forward", "desc": "Check JWT & X-Correlation-ID"},
+        {"actor": "PAYMENT SERVICE", "action": "Validate Conditions", "desc": "Check User Balance >= Amount\nCheck Tuition == UNPAID"},
+        {"actor": "OTP SERVICE", "action": "Generate OTP Code", "desc": "Save to DB & Publish 'otp_email' event"},
+        {"actor": "NOTIFICATION SERVICE", "action": "Send OTP Email", "desc": "Send code via SMTP to student"},
+        {"actor": "FRONTEND", "action": "Input & Submit OTP", "desc": "User inputs 6-digit OTP code"},
+        {"actor": "OTP SERVICE", "action": "Verify OTP Code", "desc": "Check validity & expiration (5 mins)"},
+        {"actor": "USER SERVICE", "action": "Deduct Balance (Execution 1)", "desc": "SELECT ... FOR UPDATE\nDeduct user account balance"},
+        {"actor": "TUITION SERVICE", "action": "Update Tuition (Execution 2)", "desc": "SELECT ... FOR UPDATE\nChange status to PAID"},
+        {"actor": "PAYMENT SERVICE", "action": "Complete Transaction", "desc": "Save history & Publish 'payment_success'"},
+        {"actor": "NOTIFICATION SERVICE", "action": "Send E-receipt Email", "desc": "Send electronic receipt to user"}
     ]
 
     box_w = 400
@@ -81,13 +81,13 @@ def draw_workflow():
             
     # Vẽ Legend / Chú thích
     draw.rounded_rectangle([50, 50, 350, 150], radius=10, fill=(240, 240, 240), outline=(180, 180, 180), width=1)
-    draw.text((70, 70), "Chú thích (Legend):", font=font_main, fill=text_color)
-    draw.text((70, 110), "Các bước xử lý tuần tự của hệ thống", font=font_sub, fill=(180, 180, 180))
+    draw.text((70, 70), "Legend:", font=font_main, fill=text_color)
+    draw.text((70, 110), "Sequential processing steps of the system", font=font_sub, fill=(180, 180, 180))
 
     # Lưu ảnh
     os.makedirs('docs/diagrams', exist_ok=True)
     img.save('docs/diagrams/so_do_workflow.jpg', quality=95)
-    print("Đã tạo thành công docs/diagrams/so_do_workflow.jpg")
+    print("Successfully generated docs/diagrams/so_do_workflow.jpg")
 
 if __name__ == "__main__":
     draw_workflow()
