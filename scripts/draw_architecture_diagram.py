@@ -4,15 +4,15 @@ from PIL import Image, ImageDraw, ImageFont
 def create_architecture_diagram():
     # Kích thước ảnh chất lượng cao (2x resolution so với ảnh gốc)
     W, H = 800, 1280
-    img = Image.new("RGBA", (W, H), "#111111")
+    img = Image.new("RGBA", (W, H), "#FAFAFA")
     draw = ImageDraw.Draw(img)
 
     # 1. Vẽ lưới nền (Grid Pattern)
     grid_size = 20
     for x in range(0, W, grid_size):
-        draw.line([(x, 0), (x, H)], fill="#1a1a1a", width=1)
+        draw.line([(x, 0), (x, H)], fill="#EAEAEA", width=1)
     for y in range(0, H, grid_size):
-        draw.line([(0, y), (W, y)], fill="#1a1a1a", width=1)
+        draw.line([(0, y), (W, y)], fill="#EAEAEA", width=1)
 
     # Load font
     try:
@@ -24,11 +24,11 @@ def create_architecture_diagram():
         font_node = ImageFont.load_default()
         font_node_bold = ImageFont.load_default()
 
-    def draw_rounded_rect(xy, fill="#181818", outline="#444444", radius=14, width=1):
+    def draw_rounded_rect(xy, fill="#EAEAEA", outline="#CCCCCC", radius=14, width=1):
         draw.rounded_rectangle(xy, radius=radius, fill=fill, outline=outline, width=width)
 
     def draw_node_box(x, y, w, h, text, subtext=None):
-        draw_rounded_rect([x, y, x + w, y + h], fill="#0a0a0a", outline="#ffffff", radius=8, width=1)
+        draw_rounded_rect([x, y, x + w, y + h], fill="#FFFFFF", outline="#333333", radius=8, width=1)
         if subtext:
             bbox1 = font_node.getbbox(text)
             tw1, th1 = bbox1[2] - bbox1[0], bbox1[3] - bbox1[1]
@@ -36,47 +36,47 @@ def create_architecture_diagram():
             tw2, th2 = bbox2[2] - bbox2[0], bbox2[3] - bbox2[1]
             total_h = th1 + th2 + 6
             start_y = y + (h - total_h) // 2
-            draw.text((x + (w - tw1) // 2, start_y), text, fill="#ffffff", font=font_node)
-            draw.text((x + (w - tw2) // 2, start_y + th1 + 6), subtext, fill="#ffffff", font=font_node)
+            draw.text((x + (w - tw1) // 2, start_y), text, fill="#111111", font=font_node)
+            draw.text((x + (w - tw2) // 2, start_y + th1 + 6), subtext, fill="#111111", font=font_node)
         else:
             bbox = font_node.getbbox(text)
             tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-            draw.text((x + (w - tw) // 2, y + (h - th) // 2 - 2), text, fill="#ffffff", font=font_node)
+            draw.text((x + (w - tw) // 2, y + (h - th) // 2 - 2), text, fill="#111111", font=font_node)
 
     def draw_cylinder(x, y, w, h, text):
         ry = 10
         # 1. Vẽ nền bên trong cylinder (fill)
-        draw.rectangle([x, y + ry, x + w, y + h - ry], fill="#0a0a0a")
-        draw.pieslice([x, y + h - 2 * ry, x + w, y + h], start=0, end=180, fill="#0a0a0a")
-        draw.ellipse([x, y, x + w, y + 2 * ry], fill="#0a0a0a")
+        draw.rectangle([x, y + ry, x + w, y + h - ry], fill="#FFFFFF")
+        draw.pieslice([x, y + h - 2 * ry, x + w, y + h], start=0, end=180, fill="#FFFFFF")
+        draw.ellipse([x, y, x + w, y + 2 * ry], fill="#FFFFFF")
 
         # 2. Vẽ viền trắng
-        draw.line([(x, y + ry), (x, y + h - ry)], fill="#ffffff", width=1)
-        draw.line([(x + w, y + ry), (x + w, y + h - ry)], fill="#ffffff", width=1)
-        draw.arc([x, y + h - 2 * ry, x + w, y + h], start=0, end=180, fill="#ffffff", width=1)
-        draw.ellipse([x, y, x + w, y + 2 * ry], outline="#ffffff", width=1)
+        draw.line([(x, y + ry), (x, y + h - ry)], fill="#111111", width=1)
+        draw.line([(x + w, y + ry), (x + w, y + h - ry)], fill="#111111", width=1)
+        draw.arc([x, y + h - 2 * ry, x + w, y + h], start=0, end=180, fill="#111111", width=1)
+        draw.ellipse([x, y, x + w, y + 2 * ry], outline="#333333", width=1)
 
         # 3. Vẽ text ở giữa
         bbox = font_node.getbbox(text)
         tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-        draw.text((x + (w - tw) // 2, y + (h - th) // 2 + 2), text, fill="#ffffff", font=font_node)
+        draw.text((x + (w - tw) // 2, y + (h - th) // 2 + 2), text, fill="#111111", font=font_node)
 
     def draw_arrow_down(x, y1, y2):
-        draw.line([(x, y1), (x, y2)], fill="#ffffff", width=2)
+        draw.line([(x, y1), (x, y2)], fill="#111111", width=2)
         arrow_size = 6
-        draw.polygon([(x, y2), (x - arrow_size, y2 - arrow_size * 1.5), (x + arrow_size, y2 - arrow_size * 1.5)], fill="#ffffff")
+        draw.polygon([(x, y2), (x - arrow_size, y2 - arrow_size * 1.5), (x + arrow_size, y2 - arrow_size * 1.5)], fill="#111111")
 
     def draw_arrow_right(x1, x2, y):
-        draw.line([(x1, y), (x2, y)], fill="#ffffff", width=1)
+        draw.line([(x1, y), (x2, y)], fill="#111111", width=1)
         arrow_size = 4
-        draw.polygon([(x2, y), (x2 - arrow_size * 1.5, y - arrow_size), (x2 - arrow_size * 1.5, y + arrow_size)], fill="#ffffff")
+        draw.polygon([(x2, y), (x2 - arrow_size * 1.5, y - arrow_size), (x2 - arrow_size * 1.5, y + arrow_size)], fill="#111111")
 
     # ==========================
     # 1. LAYER 1: Web Application (UI)
     # ==========================
     L1_y, L1_h = 30, 90
     draw_rounded_rect([40, L1_y, 760, L1_y + L1_h], radius=16)
-    draw.text((70, L1_y + 36), "Web Application (UI)", fill="#ffffff", font=font_layer)
+    draw.text((70, L1_y + 36), "Web Application (UI)", fill="#111111", font=font_layer)
     draw_node_box(260, L1_y + 20, 260, 50, "Web Application (React /", "Angular / Vue)")
 
     # Mũi tên L1 -> L2
@@ -87,7 +87,7 @@ def create_architecture_diagram():
     # ==========================
     L2_y, L2_h = L1_y + L1_h + 35, 80
     draw_rounded_rect([40, L2_y, 760, L2_y + L2_h], radius=16)
-    draw.text((70, L2_y + 30), "Gateway Layer", fill="#ffffff", font=font_layer)
+    draw.text((70, L2_y + 30), "Gateway Layer", fill="#111111", font=font_layer)
     draw_node_box(260, L2_y + 18, 260, 44, "API Gateway")
 
     # Mũi tên L2 -> L3
@@ -98,7 +98,7 @@ def create_architecture_diagram():
     # ==========================
     L3_y, L3_h = L2_y + L2_h + 35, 500
     draw_rounded_rect([40, L3_y, 760, L3_y + L3_h], radius=20)
-    draw.text((70, L3_y + 235), "Core Microservices Layer", fill="#ffffff", font=font_layer)
+    draw.text((70, L3_y + 235), "Core Microservices Layer", fill="#111111", font=font_layer)
 
     # Danh sách 6 Microservices:
     services = [
@@ -134,7 +134,7 @@ def create_architecture_diagram():
     # ==========================
     L4_y, L4_h = L3_y + L3_h + 35, 150
     draw_rounded_rect([40, L4_y, 760, L4_y + L4_h], radius=16)
-    draw.text((70, L4_y + 62), "Infrastructure Layer", fill="#ffffff", font=font_layer)
+    draw.text((70, L4_y + 62), "Infrastructure Layer", fill="#111111", font=font_layer)
 
     draw_node_box(260, L4_y + 22, 260, 44, "RabbitMQ Message Broker")
     draw_node_box(260, L4_y + 82, 260, 44, "Hệ thống Email TDTU (SMTP)")

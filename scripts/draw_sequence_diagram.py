@@ -3,15 +3,15 @@ from PIL import Image, ImageDraw, ImageFont
 
 def draw_sequence_diagram():
     W, H = 1240, 1260
-    img = Image.new("RGBA", (W, H), "#111111")
+    img = Image.new("RGBA", (W, H), "#FAFAFA")
     draw = ImageDraw.Draw(img)
 
     # 1. Grid background
     grid_size = 20
     for x in range(0, W, grid_size):
-        draw.line([(x, 0), (x, H)], fill="#181818", width=1)
+        draw.line([(x, 0), (x, H)], fill="#EAEAEA", width=1)
     for y in range(0, H, grid_size):
-        draw.line([(0, y), (W, y)], fill="#181818", width=1)
+        draw.line([(0, y), (W, y)], fill="#EAEAEA", width=1)
 
     # Load fonts
     try:
@@ -49,14 +49,14 @@ def draw_sequence_diagram():
             draw.line([(px, ly), (px, min(ly + 5, bottom_y))], fill="#444444", width=1)
 
         # Hộp ở trên
-        draw.rounded_rectangle([px - part_w // 2, top_y, px + part_w // 2, top_y + part_h], radius=6, fill="#0a0a0a", outline="#ffffff", width=1)
+        draw.rounded_rectangle([px - part_w // 2, top_y, px + part_w // 2, top_y + part_h], radius=6, fill="#FFFFFF", outline="#333333", width=1)
         bbox = font_part.getbbox(p["name"])
         tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-        draw.text((px - tw // 2, top_y + (part_h - th) // 2 - 2), p["name"], fill="#ffffff", font=font_part)
+        draw.text((px - tw // 2, top_y + (part_h - th) // 2 - 2), p["name"], fill="#111111", font=font_part)
 
         # Hộp ở dưới
-        draw.rounded_rectangle([px - part_w // 2, bottom_y, px + part_w // 2, bottom_y + part_h], radius=6, fill="#0a0a0a", outline="#ffffff", width=1)
-        draw.text((px - tw // 2, bottom_y + (part_h - th) // 2 - 2), p["name"], fill="#ffffff", font=font_part)
+        draw.rounded_rectangle([px - part_w // 2, bottom_y, px + part_w // 2, bottom_y + part_h], radius=6, fill="#FFFFFF", outline="#333333", width=1)
+        draw.text((px - tw // 2, bottom_y + (part_h - th) // 2 - 2), p["name"], fill="#111111", font=font_part)
 
     # Hàm vẽ mũi tên đồng bộ (Sync Request: nét liền có đầu mũi tên)
     def draw_msg(x1, x2, y, label, is_response=False, is_bold=False):

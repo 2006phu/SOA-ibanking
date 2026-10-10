@@ -5,11 +5,11 @@ def draw_workflow():
     # Kích thước ảnh
     width = 1200
     height = 1600
-    bg_color = (18, 18, 18)
-    box_color = (30, 30, 30)
-    text_color = (255, 255, 255)
+    bg_color = (250, 250, 250)
+    box_color = (255, 255, 255)
+    text_color = (20, 20, 20)
     accent_color = (0, 150, 136)
-    arrow_color = (150, 150, 150)
+    arrow_color = (100, 100, 100)
     
     img = Image.new('RGB', (width, height), color=bg_color)
     draw = ImageDraw.Draw(img)
@@ -71,16 +71,16 @@ def draw_workflow():
         draw.rounded_rectangle([x1, y1, x2, y2], radius=10, fill=box_color, outline=accent_color, width=2)
         
         # Vẽ chữ
-        draw.text((x1 + 20, y1 + 10), step["actor"], font=font_sub, fill=(200, 200, 200))
+        draw.text((x1 + 20, y1 + 10), step["actor"], font=font_sub, fill=(60, 60, 60))
         draw.text((x1 + 20, y1 + 35), step["action"], font=font_main, fill=text_color)
-        draw.text((x1 + 20, y1 + 65), step["desc"], font=font_sub, fill=(150, 150, 150))
+        draw.text((x1 + 20, y1 + 65), step["desc"], font=font_sub, fill=(100, 100, 100))
         
         # Mũi tên nối với bước tiếp theo
         if i < len(steps) - 1:
             draw_arrow(center_x, y2, y2 + spacing - box_h)
             
     # Vẽ Legend / Chú thích
-    draw.rounded_rectangle([50, 50, 350, 150], radius=10, fill=(25, 25, 25), outline=(100, 100, 100), width=1)
+    draw.rounded_rectangle([50, 50, 350, 150], radius=10, fill=(240, 240, 240), outline=(180, 180, 180), width=1)
     draw.text((70, 70), "Chú thích (Legend):", font=font_main, fill=text_color)
     draw.text((70, 110), "Các bước xử lý tuần tự của hệ thống", font=font_sub, fill=(180, 180, 180))
 
