@@ -86,7 +86,7 @@ def draw_usecase():
 
     # Save
     os.makedirs('docs/diagrams', exist_ok=True)
-    img.save('docs/diagrams/so_do_usecase.jpg', quality=95)
+    img.convert("RGB").save('docs/diagrams/so_do_usecase.jpg', quality=95)
 
 if __name__ == "__main__":
     draw_usecase()
