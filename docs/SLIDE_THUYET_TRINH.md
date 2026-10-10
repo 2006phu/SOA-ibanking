@@ -4,12 +4,12 @@ theme: default
 paginate: true
 ---
 
-# BÁO CÁO ĐỒ ÁN GIỮA KỲ
-## Môn học: Kiến trúc Hướng Dịch vụ (SOA)
-**Đề tài:** Hệ thống thanh toán học phí trực tuyến (iBanking Tuition Payment) sử dụng Microservices
+# MIDTERM PRESENTATION
+## Course: Service-Oriented Architecture (SOA)
+**Project:** Online Tuition Payment System (iBanking) using Microservices Architecture
 
-**Giảng viên hướng dẫn:** [Tên Giảng Viên]
-**Sinh viên thực hiện:** Lê Phú (MSSV: 524h0121)
+**Instructor:** [Instructor's Name]
+**Student:** Lê Phú (Student ID: 524h0121)
 
 ---
 
@@ -17,60 +17,60 @@ paginate: true
 
 | Student ID | Full Name | Academic Email | Assigned Responsibilities | Completion |
 | --- | --- | --- | --- | --- |
-| 524H0121 | Lê Phú | 524h0121@student.tdtu.edu.vn | Toàn bộ dự án (Phân tích, Thiết kế, Cài đặt Microservices, React Frontend, Docker) | 100% |
+| 524H0121 | Lê Phú | 524h0121@student.tdtu.edu.vn | Full Project (Analysis, Design, Microservices Implementation, React Frontend, Docker) | 100% |
 
 ---
 
-# Tổng quan hệ thống & Usecase (Frontend GUI)
+# System Overview & Usecase (Frontend GUI)
 
-- **Giao diện React.js:** Mô phỏng ứng dụng iBanking chuyên nghiệp.
-- **Tính năng chính:**
-  - Đăng nhập & Xác thực JWT.
-  - Tra cứu thông tin học phí sinh viên theo MSSV.
-  - Hiển thị số dư tài khoản theo thời gian thực.
-  - Xác nhận OTP qua Email và xem Lịch sử giao dịch.
+- **React.js Interface:** Professional iBanking simulation.
+- **Key Features:**
+  - Login & JWT Authentication.
+  - Tuition fee inquiry by Student ID.
+  - Real-time account balance display.
+  - Email OTP confirmation and Transaction History tracking.
 
 ![bg right:40% 90%](diagrams/so_do_usecase.jpg)
 
 ---
 
-# Kiến trúc Microservices & API Gateway
+# Microservices Architecture & API Gateway
 
-- **Phân tách dịch vụ:** 6 Microservices độc lập (Auth, User, Tuition, Payment, OTP, Notification).
-- **Database-per-service:** 5 cơ sở dữ liệu PostgreSQL riêng biệt, không dùng khóa ngoại chéo.
+- **Service Decomposition:** 6 independent Microservices (Auth, User, Tuition, Payment, OTP, Notification).
+- **Database-per-service:** 5 separate PostgreSQL databases, no cross-database foreign keys.
 - **API Gateway:**
-  - Điểm truy cập duy nhất (Single Entry Point).
-  - Xác thực token (JWT Auth) và định tuyến (Routing).
-  - Theo dõi request bằng header `X-Correlation-ID`.
+  - Single Entry Point.
+  - JWT Authentication and Request Routing.
+  - Request tracking using `X-Correlation-ID` header.
 
 ![bg right:45% 90%](diagrams/so_do_kien_truc.jpg)
 
 ---
 
-# Giao dịch phân tán (Saga Pattern)
+# Distributed Transaction (Saga Pattern)
 
-**Bài toán:** Đảm bảo tính nhất quán dữ liệu trên nhiều DB (Trừ tiền ở User DB và Cập nhật trạng thái ở Tuition DB).
-- **Cơ chế Orchestration:** Payment Service đóng vai trò điều phối trung tâm.
+**Problem:** Ensuring data consistency across multiple DBs (Deducting balance in User DB and updating status in Tuition DB).
+- **Orchestration Mechanism:** Payment Service acts as the central orchestrator.
 - **Rollback (Compensation):** 
-  - Nếu trừ tiền thành công nhưng cập nhật học phí thất bại (ví dụ: bị người khác thanh toán trước), Payment Service sẽ gọi User Service để **hoàn tiền (Refund)**.
-  - Đảm bảo tính ACID trong môi trường phân tán.
+  - If money deduction succeeds but tuition update fails (e.g., already paid by someone else), Payment Service calls User Service to process a **Refund**.
+  - Ensures ACID properties in a distributed environment.
 
 ![bg right:40% 80%](diagrams/so_do_sequence.jpg)
 
 ---
 
-# Xử lý tương tranh (Concurrency Control)
+# Concurrency Control (Pessimistic Locking)
 
-**Vấn đề:** 
-1. *Double-spending:* Một user gửi nhiều request thanh toán cùng lúc.
-2. *Race Condition:* Nhiều người cùng nộp một khoản học phí.
+**Problem:** 
+1. *Double-spending:* A single user sends multiple payment requests simultaneously.
+2. *Race Condition:* Multiple users attempting to pay the same tuition fee at the exact same time.
 
-**Giải pháp:** Áp dụng **Khóa bi quan (Pessimistic Locking)** ở mức Database.
-- Dùng lệnh `SELECT ... FOR UPDATE` khi đọc số dư và trạng thái học phí.
-- Các transaction đến sau phải chờ transaction trước hoàn tất giải phóng khóa.
+**Solution:** Applying **Pessimistic Locking** at the Database level.
+- Using `SELECT ... FOR UPDATE` when reading balances and tuition statuses.
+- Subsequent transactions must wait until the first transaction finishes and releases the lock.
 
 ```python
-# Code minh họa trong User Service (Khóa dòng dữ liệu)
+# Code Snippet in User Service (Row-level Locking)
 result = await db.execute(
     select(UserProfile)
     .where(UserProfile.id == user_id)
@@ -80,55 +80,55 @@ result = await db.execute(
 
 ---
 
-# Giao tiếp bất đồng bộ (Asynchronous Communication)
+# Asynchronous Communication
 
-**Tối ưu hiệu năng bằng RabbitMQ:**
-- Các tác vụ không cần chờ kết quả ngay (như gửi Email) được đẩy vào Message Queue.
-- **Notification Service** đóng vai trò Worker độc lập:
-  - Lắng nghe queue `otp_email`: Gửi mã OTP xác thực (hiệu lực 5 phút).
-  - Lắng nghe queue `payment_success`: Gửi biên lai điện tử qua email.
-- Tích hợp `aiosmtplib` gửi email thực tế qua SMTP server của Gmail.
+**Performance Optimization with RabbitMQ:**
+- Tasks not requiring immediate response (like Email) are pushed to the Message Queue.
+- **Notification Service** acts as an independent Worker:
+  - Listens to `otp_email` queue: Sends OTP codes (valid for 5 mins).
+  - Listens to `payment_success` queue: Sends e-receipts via email.
+- Integrated with `aiosmtplib` to send real emails via Gmail's SMTP server.
 
 ---
 
-# Thiết kế Cơ sở dữ liệu (ERD)
+# Database Design (ERD)
 
-- Phân rã dữ liệu hợp lý (Data Decentralization).
-- **Payment Service** lưu bản ghi giao dịch toàn vẹn để đối soát.
-- **Idempotency Key:** Cơ chế ngăn chặn gửi trùng request từ Frontend, đảm bảo 1 giao dịch chỉ được tạo 1 lần duy nhất dù nhấn nút nhiều lần.
+- Logical Data Decentralization.
+- **Payment Service** stores complete transaction records for auditing.
+- **Idempotency Key:** Prevents duplicate requests from the Frontend, ensuring a transaction is only created once regardless of repeated clicks.
 
 ![bg right:50% 90%](diagrams/so_do_erd.jpg)
 
 ---
 
-# Đánh giá: Ưu điểm & Hạn chế
+# Evaluation: Advantages & Limitations
 
-**Ưu điểm (Advantages):**
-- **Toàn vẹn dữ liệu:** Giải quyết triệt để vấn đề thanh toán đồng thời (Concurrency) và nhất quán dữ liệu (Saga).
-- **Khả năng mở rộng (Scalability):** Dễ dàng nhân bản (scale up) các service chịu tải cao (như Payment).
-- **Bảo mật:** Luồng OTP thực tế và JWT an toàn.
+**Advantages:**
+- **Data Integrity:** Completely resolves concurrent payment issues and distributed consistency (Saga).
+- **Scalability:** Easy to independently scale up high-load services (e.g., Payment).
+- **Security:** Real email OTP flow and secure JWT.
 
-**Hạn chế & Hướng khắc phục (Limitations & Trade-offs):**
-- **Độ trễ mạng:** Gọi API nội bộ qua lại nhiều lần làm tăng latency $\rightarrow$ *Có thể dùng gRPC thay thế HTTP REST trong tương lai.*
-- **Khó debug:** Truy vết lỗi trên nhiều service khó khăn $\rightarrow$ *Đã cài đặt `X-Correlation-ID` để log và tra cứu.*
+**Limitations & Trade-offs:**
+- **Network Latency:** Multiple internal API calls increase latency $\rightarrow$ *Could replace HTTP REST with gRPC in the future.*
+- **Debugging Complexity:** Tracing errors across multiple services is difficult $\rightarrow$ *Implemented `X-Correlation-ID` for comprehensive logging and tracking.*
 
 ---
 
-# Mức độ hoàn thành & Tiêu chí đánh giá
+# Project Deliverables & Task Completion
 
-| Yêu cầu / Tiêu chí | Mô tả công việc & Deliverables | Trạng thái |
+| Requirement / Criteria | Description & Deliverables | Status / Completion |
 | --- | --- | --- |
-| **Req 1: Microservices** | Kiến trúc đa dịch vụ + API Gateway (FastAPI) | 100% (Pass) |
-| **Req 2: Database** | DB độc lập (PostgreSQL), không khóa ngoại xuyên service | 100% (Pass) |
-| **Req 3: Phân tán** | Cài đặt Saga Pattern (Orchestration) cho giao dịch | 100% (Pass) |
-| **Req 4: Tương tranh** | Cài đặt Pessimistic Locking (FOR UPDATE) | 100% (Pass) |
-| **Req 5: Bất đồng bộ** | Sử dụng Message Broker (RabbitMQ) & Gửi Email | 100% (Pass) |
-| **Req 6: Frontend GUI** | Giao diện React chuyên nghiệp, gọi qua Gateway | 100% (Pass) |
-| **Req 7: Triển khai** | Đóng gói và chạy trơn tru với Docker Compose | 100% (Pass) |
+| **Req 1: Microservices** | Multi-service architecture + API Gateway (FastAPI) | 100% (Pass) |
+| **Req 2: Database** | Independent DBs (PostgreSQL), no cross-service FKs | 100% (Pass) |
+| **Req 3: Distributed Sys** | Implemented Saga Pattern (Orchestration) | 100% (Pass) |
+| **Req 4: Concurrency** | Implemented Pessimistic Locking (FOR UPDATE) | 100% (Pass) |
+| **Req 5: Async Comm** | Message Broker (RabbitMQ) & Real Email sending | 100% (Pass) |
+| **Req 6: Frontend GUI** | Professional React UI, routed via Gateway | 100% (Pass) |
+| **Req 7: Deployment** | Packaged and runs smoothly with Docker Compose | 100% (Pass) |
 
 ---
 
 # Thank You for Your Attention
 
 **Q&A Session**
-*(Demo ứng dụng thực tế và chạy Script Python tự động Test Concurrency)*
+*(Live Application Demo and Automated Concurrency Test Script execution)*
