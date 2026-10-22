@@ -40,7 +40,7 @@ docker compose up -d --build
 | 52100999 | Trần Thị Bình | 13.200.000 VNĐ |
 | 52100777 | Lê Hoàng Cường | 10.800.000 VNĐ |
 
-## Lệnh Demo & Test (Dành cho Giảng viên / Đánh giá điểm 10)
+## Lệnh Demo & Test 
 
 ```bash
 # 1. Test Concurrency tự động (Chống Race Condition & Double-spending)
