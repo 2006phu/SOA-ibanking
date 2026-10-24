@@ -12,7 +12,8 @@ import asyncio
 import httpx
 import json
 
-BASE_URL = "http://localhost:8000/api"
+import os
+BASE_URL = os.getenv("GATEWAY_URL", "http://localhost:8000/api")
 
 # ============================================================
 # Seed Users (will be created in Auth Service -> synced to User Service)
