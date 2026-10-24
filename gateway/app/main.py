@@ -32,10 +32,11 @@ app = FastAPI(
 # 1. CORS Middleware (outermost, handles preflight and sets headers)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex=r"^https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Correlation-ID", "Content-Disposition"],
 )
 
 # 2. Correlation ID Middleware (generates/attaches X-Correlation-ID)

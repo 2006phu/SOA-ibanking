@@ -7,7 +7,7 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <Loading />;
+    return <Loading fullScreen={true} message="Đang khởi tạo phiên làm việc bảo mật..." />;
   }
 
   if (!isAuthenticated) {

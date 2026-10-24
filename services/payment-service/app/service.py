@@ -305,7 +305,10 @@ class PaymentService:
                     balance_after = Decimal(str(raw_balance))
         except httpx.HTTPStatusError as e:
             logger.error(f"Failed to deduct balance for user {user_id}: {e.response.text}")
-            tx.status = "FAILED"
+            tx.status = "REFUNDED" if refund_success else "FAILED"
+            if refund_success and tx.user_balance_before is not None:
+                tx.user_balance_after = tx.user_balance_before
+            tx.completed_at = datetime.now(timezone.utc)
             await db.commit()
             detail_msg = "Failed to deduct user balance"
             try:
@@ -316,7 +319,10 @@ class PaymentService:
             raise HTTPException(status_code=e.response.status_code, detail=detail_msg)
         except httpx.RequestError as e:
             logger.error(f"Cannot reach user service to deduct balance: {e}")
-            tx.status = "FAILED"
+            tx.status = "REFUNDED" if refund_success else "FAILED"
+            if refund_success and tx.user_balance_before is not None:
+                tx.user_balance_after = tx.user_balance_before
+            tx.completed_at = datetime.now(timezone.utc)
             await db.commit()
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -373,7 +379,10 @@ class PaymentService:
                     f"CRITICAL: Saga compensation refund failed for user {user_id}, transaction {tx.id}! Error: {comp_err}"
                 )
 
-            tx.status = "FAILED"
+            tx.status = "REFUNDED" if refund_success else "FAILED"
+            if refund_success and tx.user_balance_before is not None:
+                tx.user_balance_after = tx.user_balance_before
+            tx.completed_at = datetime.now(timezone.utc)
             await db.commit()
 
             final_status = status.HTTP_409_CONFLICT if tuition_error_status == 409 else status.HTTP_400_BAD_REQUEST
