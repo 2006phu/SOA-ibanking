@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Use Case Diagram - iBanking TDTU</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #ffffff;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 1100px;
+      height: 800px;
+      overflow: hidden;
+    }
+    .diagram-container {
+      width: 1100px;
+      height: 800px;
+      background: #ffffff;
+      position: relative;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    text {
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="diagram-container">
+    <svg viewBox="0 0 1100 800" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Gradients -->
+        <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#0F172A" />
+          <stop offset="100%" stop-color="#1E293B" />
+        </linearGradient>
+
+        <linearGradient id="ucGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FFFFFF" />
+          <stop offset="100%" stop-color="#F8FAFC" />
+        </linearGradient>
+
+        <linearGradient id="actorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#3B82F6" />
+          <stop offset="100%" stop-color="#1D4ED8" />
+        </linearGradient>
+
+        <linearGradient id="brokerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FFF7ED" />
+          <stop offset="100%" stop-color="#FFEDD5" />
+        </linearGradient>
+
+        <linearGradient id="smtpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#F0FDF4" />
+          <stop offset="100%" stop-color="#DCFCE7" />
+        </linearGradient>
+
+        <!-- Drop Shadows -->
+        <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="130%" filterUnits="userSpaceOnUse">
+          <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0F172A" flood-opacity="0.06" />
+        </filter>
+        <filter id="boundaryShadow" x="-5%" y="-5%" width="110%" height="110%" filterUnits="userSpaceOnUse">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.04" />
+        </filter>
+
+        <!-- Arrow Markers -->
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#475569" />
+        </marker>
+        <marker id="arrow-broker" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#EA580C" />
+        </marker>
+        <marker id="arrow-smtp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#16A34A" />
+        </marker>
+      </defs>
+
+      <!-- Background subtle dot pattern -->
+      <g opacity="0.45">
+        <pattern id="bgGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="1" fill="#E2E8F0" />
+        </pattern>
+        <rect width="1100" height="800" fill="url(#bgGrid)" />
+      </g>
+
+      <!-- Main Diagram Header Banner -->
+      <g id="diagram-title">
+        <rect x="40" y="24" width="1020" height="46" rx="8" fill="url(#headerGrad)" />
+        <text x="60" y="52" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="15" letter-spacing="0.5">
+          USE CASE DIAGRAM : HỆ THỐNG THANH TOÁN HỌC PHÍ iBANKING TDTU
+        </text>
+        <rect x="880" y="33" width="160" height="28" rx="6" fill="#334155" />
+        <text x="960" y="51" fill="#38BDF8" font-family="'JetBrains Mono', monospace" font-weight="600" font-size="11" text-anchor="middle">
+          SOA ARCHITECTURE
+        </text>
+      </g>
+
+      <!-- ================= SYSTEM BOUNDARY ================= -->
+      <g id="system-boundary">
+        <rect x="250" y="95" width="530" height="625" rx="16" fill="#FAFCFF" stroke="#CBD5E1" stroke-width="2" filter="url(#boundaryShadow)" />
+        
+        <!-- Boundary Header Badge -->
+        <rect x="250" y="95" width="530" height="40" rx="16" fill="#F1F5F9" />
+        <rect x="250" y="119" width="530" height="16" fill="#F1F5F9" />
+        <line x1="250" y1="135" x2="780" y2="135" stroke="#E2E8F0" stroke-width="1.5" />
+        
+        <circle cx="275" cy="115" r="5" fill="#2563EB" />
+        <text x="290" y="120" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="13.5">
+          Hệ thống iBanking (Microservices Platform Boundary)
+        </text>
+      </g>
+
+      <!-- ================= ACTOR: STUDENT / PARENT ================= -->
+      <g id="actor-primary">
+        <!-- Actor Card Base -->
+        <rect x="40" y="275" width="150" height="240" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#cardShadow)" />
+        
+        <!-- Actor Vector Figure -->
+        <g transform="translate(115, 335)">
+          <!-- Head -->
+          <circle cx="0" cy="-35" r="16" fill="url(#actorGrad)" />
+          <!-- Torso -->
+          <line x1="0" y1="-19" x2="0" y2="22" stroke="#1D4ED8" stroke-width="4.5" stroke-linecap="round" />
+          <!-- Arms -->
+          <line x1="-30" y1="-3" x2="30" y2="-3" stroke="#1D4ED8" stroke-width="4.5" stroke-linecap="round" />
+          <!-- Left Leg -->
+          <line x1="0" y1="22" x2="-22" y2="56" stroke="#1D4ED8" stroke-width="4.5" stroke-linecap="round" />
+          <!-- Right Leg -->
+          <line x1="0" y1="22" x2="22" y2="56" stroke="#1D4ED8" stroke-width="4.5" stroke-linecap="round" />
+        </g>
+
+        <!-- Actor Label -->
+        <text x="115" y="440" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="14" text-anchor="middle">
+          Student / Parent
+        </text>
+        <rect x="58" y="452" width="114" height="22" rx="4" fill="#EFF6FF" />
+        <text x="115" y="467" fill="#2563EB" font-family="'JetBrains Mono', monospace" font-weight="600" font-size="11" text-anchor="middle">
+          «Primary Actor»
+        </text>
+        <text x="115" y="495" fill="#64748B" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="11.5" text-anchor="middle">
+          Sinh viên / Phụ huynh
+        </text>
+      </g>
+
+      <!-- ================= CONNECTOR LINES (CRITICAL: fill="none") ================= -->
+      <!-- Connections from Primary Actor (x=190, y=395) to each Use Case left tip (x=335) -->
+      <g id="actor-connections" fill="none" stroke="#64748B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <!-- To UC1 (y=190) -->
+        <path d="M 190 375 C 230 375, 250 190, 335 190" />
+        <!-- To UC2 (y=280) -->
+        <path d="M 190 385 C 240 385, 260 280, 335 280" />
+        <!-- To UC3 (y=370) -->
+        <path d="M 190 395 L 335 370" />
+        <!-- To UC4 (y=460) -->
+        <path d="M 190 405 L 335 460" />
+        <!-- To UC5 (y=550) -->
+        <path d="M 190 415 C 240 415, 260 550, 335 550" />
+        <!-- To UC6 (y=640) -->
+        <path d="M 190 425 C 230 425, 250 640, 335 640" />
+      </g>
+
+      <!-- ================= USE CASES (6 OVALS) ================= -->
+      
+      <!-- UC 1: Login & Authenticate -->
+      <g id="uc-1" transform="translate(515, 190)">
+        <ellipse cx="0" cy="0" rx="180" ry="34" fill="url(#ucGrad)" stroke="#2563EB" stroke-width="2" filter="url(#cardShadow)" />
+        <circle cx="-140" cy="0" r="14" fill="#DBEAFE" />
+        <text x="-140" y="5" fill="#1E40AF" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" text-anchor="middle">1</text>
+        <text x="15" y="-3" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="14.5" text-anchor="middle">
+          Login &amp; Authenticate
+        </text>
+        <text x="15" y="16" fill="#64748B" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="11.5" text-anchor="middle">
+          Đăng nhập hệ thống &amp; Cấp mã JWT Token
+        </text>
+      </g>
+
+      <!-- UC 2: View Account Balance -->
+      <g id="uc-2" transform="translate(515, 280)">
+        <ellipse cx="0" cy="0" rx="180" ry="34" fill="url(#ucGrad)" stroke="#2563EB" stroke-width="2" filter="url(#cardShadow)" />
+        <circle cx="-140" cy="0" r="14" fill="#DBEAFE" />
+        <text x="-140" y="5" fill="#1E40AF" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" text-anchor="middle">2</text>
+        <text x="15" y="-3" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="14.5" text-anchor="middle">
+          View Account Balance
+        </text>
+        <text x="15" y="16" fill="#64748B" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="11.5" text-anchor="middle">
+          Xem thông tin tài khoản &amp; Số dư khả dụng
+        </text>
+      </g>
+
+      <!-- UC 3: Search Tuition By Student ID -->
+      <g id="uc-3" transform="translate(515, 370)">
+        <ellipse cx="0" cy="0" rx="180" ry="34" fill="url(#ucGrad)" stroke="#2563EB" stroke-width="2" filter="url(#cardShadow)" />
+        <circle cx="-140" cy="0" r="14" fill="#DBEAFE" />
+        <text x="-140" y="5" fill="#1E40AF" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" text-anchor="middle">3</text>
+        <text x="15" y="-3" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="14.5" text-anchor="middle">
+          Search Tuition By Student ID
+        </text>
+        <text x="15" y="16" fill="#64748B" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="11.5" text-anchor="middle">
+          Tra cứu công nợ học phí theo MSSV
+        </text>
+      </g>
+
+      <!-- UC 4: Initiate Payment -->
+      <g id="uc-4" transform="translate(515, 460)">
+        <ellipse cx="0" cy="0" rx="180" ry="34" fill="url(#ucGrad)" stroke="#EA580C" stroke-width="2.2" filter="url(#cardShadow)" />
+        <circle cx="-140" cy="0" r="14" fill="#FFEDD5" />
+        <text x="-140" y="5" fill="#C2410C" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" text-anchor="middle">4</text>
+        <text x="15" y="-3" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="14.5" text-anchor="middle">
+          Initiate Payment (Saga)
+        </text>
+        <text x="15" y="16" fill="#C2410C" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="11.5" text-anchor="middle">
+          Khởi tạo thanh toán &amp; Điều phối giao dịch Saga
+        </text>
+      </g>
+
+      <!-- UC 5: Receive & Verify OTP -->
+      <g id="uc-5" transform="translate(515, 550)">
+        <ellipse cx="0" cy="0" rx="180" ry="34" fill="url(#ucGrad)" stroke="#16A34A" stroke-width="2.2" filter="url(#cardShadow)" />
+        <circle cx="-140" cy="0" r="14" fill="#DCFCE7" />
+        <text x="-140" y="5" fill="#15803D" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" text-anchor="middle">5</text>
+        <text x="15" y="-3" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="14.5" text-anchor="middle">
+          Receive &amp; Verify OTP
+        </text>
+        <text x="15" y="16" fill="#15803D" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="11.5" text-anchor="middle">
+          Nhận mã qua Email &amp; Xác thực 2FA OTP
+        </text>
+      </g>
+
+      <!-- UC 6: View Transaction History -->
+      <g id="uc-6" transform="translate(515, 640)">
+        <ellipse cx="0" cy="0" rx="180" ry="34" fill="url(#ucGrad)" stroke="#2563EB" stroke-width="2" filter="url(#cardShadow)" />
+        <circle cx="-140" cy="0" r="14" fill="#DBEAFE" />
+        <text x="-140" y="5" fill="#1E40AF" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" text-anchor="middle">6</text>
+        <text x="15" y="-3" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="14.5" text-anchor="middle">
+          View Transaction History &amp; Receipt
+        </text>
+        <text x="15" y="16" fill="#64748B" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="11.5" text-anchor="middle">
+          Xem lịch sử giao dịch &amp; Xuất biên lai điện tử
+        </text>
+      </g>
+
+      <!-- ================= EXTERNAL SYSTEM 1: RABBITMQ ================= -->
+      <g id="external-broker">
+        <!-- Connector from UC4 right tip (x=695, y=460) to RabbitMQ (x=840, y=435) -->
+        <path d="M 695 460 L 840 435" fill="none" stroke="#EA580C" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-broker)" />
+        <rect x="715" y="430" width="105" height="20" rx="4" fill="#FFFFFF" stroke="#FDBA74" stroke-width="1" />
+        <text x="767" y="444" fill="#C2410C" font-family="'JetBrains Mono', monospace" font-weight="600" font-size="10.5" text-anchor="middle">
+          «publish event»
+        </text>
+
+        <!-- Broker Box -->
+        <rect x="840" y="380" width="220" height="105" rx="12" fill="url(#brokerGrad)" stroke="#F97316" stroke-width="1.8" filter="url(#cardShadow)" />
+        
+        <rect x="855" y="395" width="28" height="28" rx="6" fill="#EA580C" />
+        <!-- Queue icon -->
+        <path d="M 861 405 L 877 405 M 861 409 L 877 409 M 861 413 L 877 413" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+        
+        <text x="892" y="412" fill="#7C2D12" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="13.5">
+          Message Broker
+        </text>
+        <text x="892" y="428" fill="#C2410C" font-family="'JetBrains Mono', monospace" font-weight="600" font-size="11">
+          (RabbitMQ Server)
+        </text>
+        <line x1="855" y1="438" x2="1045" y2="438" stroke="#FED7AA" stroke-width="1" />
+        <text x="855" y="454" fill="#9A3412" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="11">
+          • Queue: otp_email
+        </text>
+        <text x="855" y="470" fill="#9A3412" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="11">
+          • Queue: payment_confirm
+        </text>
+      </g>
+
+      <!-- ================= EXTERNAL SYSTEM 2: EMAIL SMTP ================= -->
+      <g id="external-smtp">
+        <!-- Connector from UC5 right tip (x=695, y=550) to Gmail SMTP (x=840, y=575) -->
+        <path d="M 695 550 L 840 575" fill="none" stroke="#16A34A" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-smtp)" />
+        <rect x="715" y="565" width="105" height="20" rx="4" fill="#FFFFFF" stroke="#86EFAC" stroke-width="1" />
+        <text x="767" y="579" fill="#15803D" font-family="'JetBrains Mono', monospace" font-weight="600" font-size="10.5" text-anchor="middle">
+          «deliver mail»
+        </text>
+
+        <!-- SMTP Box -->
+        <rect x="840" y="530" width="220" height="105" rx="12" fill="url(#smtpGrad)" stroke="#22C55E" stroke-width="1.8" filter="url(#cardShadow)" />
+        
+        <rect x="855" y="545" width="28" height="28" rx="6" fill="#16A34A" />
+        <!-- Mail icon -->
+        <path d="M 860 554 L 869 561 L 878 554 M 860 554 L 860 566 L 878 566 L 878 554 Z" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        
+        <text x="892" y="562" fill="#14532D" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="13.5">
+          Email System
+        </text>
+        <text x="892" y="578" fill="#15803D" font-family="'JetBrains Mono', monospace" font-weight="600" font-size="11">
+          (Gmail SMTP Relay)
+        </text>
+        <line x1="855" y1="588" x2="1045" y2="588" stroke="#BBF7D0" stroke-width="1" />
+        <text x="855" y="604" fill="#166534" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="11">
+          • TLS 1.3 Encryption Port 587
+        </text>
+        <text x="855" y="620" fill="#166534" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="11">
+          • Async Worker dispatching
+        </text>
+      </g>
+
+      <!-- ================= LEGEND STRIP AT BOTTOM ================= -->
+      <g id="diagram-legend" transform="translate(40, 740)">
+        <rect x="0" y="0" width="1020" height="38" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1" />
+        
+        <!-- Legend Item 1: Primary Actor -->
+        <circle cx="30" cy="19" r="6" fill="#2563EB" />
+        <text x="45" y="23" fill="#334155" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="12">
+          Tác nhân chính (Primary Actor)
+        </text>
+
+        <!-- Legend Item 2: Core Use Case -->
+        <rect x="250" y="11" width="22" height="16" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.8" />
+        <text x="280" y="23" fill="#334155" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="12">
+          Ca sử dụng nghiệp vụ (Core Use Case)
+        </text>
+
+        <!-- Legend Item 3: External Async System -->
+        <rect x="525" y="11" width="22" height="16" rx="4" fill="#FFF7ED" stroke="#F97316" stroke-width="1.5" />
+        <text x="555" y="23" fill="#334155" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="12">
+          Hệ thống liên kết ngoại vi (Secondary Service)
+        </text>
+
+        <!-- Legend Item 4: Association -->
+        <line x1="810" y1="19" x2="840" y2="19" stroke="#64748B" stroke-width="1.8" />
+        <line x1="850" y1="19" x2="880" y2="19" stroke="#EA580C" stroke-width="1.8" stroke-dasharray="4,3" />
+        <text x="890" y="23" fill="#334155" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="12">
+          Quan hệ tương tác
+        </text>
+      </g>
+    </svg>
+  </div>
+</body>
+</html>

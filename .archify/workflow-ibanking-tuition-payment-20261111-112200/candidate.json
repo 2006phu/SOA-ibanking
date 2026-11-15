@@ -1,0 +1,215 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Quy trình Thanh toán Học phí iBanking SOA (End-to-End Saga Workflow)",
+    "quality_profile": "showcase",
+    "output": ".archify/workflow-ibanking-tuition-payment-20261111-112200/ibanking-tuition-payment.html",
+    "repository": {
+      "url": "https://github.com/2006phu/SOA-ibanking.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "d16ee42a4b925e68cfcf93131feccacf407dc090"
+    }
+  },
+  "lanes": [
+    { "id": "gateway", "label": "API Gateway & Auth" },
+    { "id": "orchestrator", "label": "Payment Orchestrator (Saga)" },
+    { "id": "domain", "label": "Tuition & User Services" },
+    { "id": "security_async", "label": "OTP, RabbitMQ & Compensation", "variant": "exception" }
+  ],
+  "phases": [
+    { "id": "phase_auth", "label": "1. Xác thực & Tra cứu", "fromCol": 0, "toCol": 1 },
+    { "id": "phase_otp", "label": "2. Khởi tạo & Cấp phát OTP", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "phase_saga", "label": "3. Thực thi Saga & Bất đồng bộ", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "groups": [
+    { "id": "grp_saga_prep", "label": "Chuẩn bị giao dịch", "lane": "orchestrator", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "grp_atomic_lock", "label": "Khóa bi quan (SELECT FOR UPDATE)", "lane": "domain", "fromCol": 4, "toCol": 5, "variant": "security" }
+  ],
+  "mainPath": [
+    "login_auth",
+    "jwt_gate",
+    "tuition_lookup",
+    "initiate_tx",
+    "confirm_tx",
+    "otp_gen",
+    "verify_saga",
+    "deduct_balance",
+    "pay_tuition",
+    "complete_tx",
+    "notify_worker"
+  ],
+  "nodes": [
+    {
+      "id": "login_auth",
+      "lane": "gateway",
+      "col": 0,
+      "type": "security",
+      "label": "Đăng nhập & JWT",
+      "sublabel": "POST /api/auth/login",
+      "sources": [
+        { "path": "gateway/app/routes/auth.py", "line": 8, "end_line": 16 },
+        { "path": "services/auth-service/app/service.py", "line": 34, "end_line": 44 }
+      ]
+    },
+    {
+      "id": "jwt_gate",
+      "lane": "gateway",
+      "col": 1,
+      "type": "security",
+      "label": "AuthMiddleware",
+      "sublabel": "Kiểm tra Bearer Token",
+      "sources": [
+        { "path": "gateway/app/middleware/auth.py", "line": 29, "end_line": 107 }
+      ]
+    },
+    {
+      "id": "tuition_lookup",
+      "lane": "domain",
+      "col": 1,
+      "type": "backend",
+      "label": "Tra cứu Công nợ",
+      "sublabel": "GET /api/tuition/{mssv}",
+      "sources": [
+        { "path": "services/tuition-service/app/service.py", "line": 26, "end_line": 67 }
+      ]
+    },
+    {
+      "id": "initiate_tx",
+      "lane": "orchestrator",
+      "col": 2,
+      "type": "backend",
+      "label": "Khởi tạo Thanh toán",
+      "sublabel": "Kiểm tra nợ & số dư",
+      "tag": "PENDING",
+      "sources": [
+        { "path": "services/payment-service/app/service.py", "line": 45, "end_line": 155 }
+      ]
+    },
+    {
+      "id": "confirm_tx",
+      "lane": "orchestrator",
+      "col": 3,
+      "type": "backend",
+      "label": "Xác nhận Giao dịch",
+      "sublabel": "Khóa dòng & yêu cầu OTP",
+      "tag": "OTP_SENT",
+      "sources": [
+        { "path": "services/payment-service/app/service.py", "line": 158, "end_line": 230 }
+      ]
+    },
+    {
+      "id": "otp_gen",
+      "lane": "security_async",
+      "col": 3,
+      "type": "security",
+      "label": "Sinh mã 2FA OTP",
+      "sublabel": "Lưu DB & đẩy otp_email",
+      "sources": [
+        { "path": "services/otp-service/app/service.py", "line": 98, "end_line": 153 }
+      ]
+    },
+    {
+      "id": "verify_saga",
+      "lane": "orchestrator",
+      "col": 4,
+      "type": "backend",
+      "label": "Xác thực & Điều phối",
+      "sublabel": "verify_otp_and_pay",
+      "sources": [
+        { "path": "services/payment-service/app/service.py", "line": 233, "end_line": 290 }
+      ]
+    },
+    {
+      "id": "deduct_balance",
+      "lane": "domain",
+      "col": 4,
+      "type": "database",
+      "label": "Trừ Số dư Tài khoản",
+      "sublabel": "User DB FOR UPDATE",
+      "sources": [
+        { "path": "services/user-service/app/service.py", "line": 44, "end_line": 101 }
+      ]
+    },
+    {
+      "id": "compensate_refund",
+      "lane": "security_async",
+      "col": 4,
+      "type": "security",
+      "label": "Giao dịch Bù trừ",
+      "sublabel": "Hoàn tiền khi lỗi gạch nợ",
+      "tag": "REFUNDED",
+      "sources": [
+        { "path": "services/payment-service/app/service.py", "line": 362, "end_line": 393 }
+      ]
+    },
+    {
+      "id": "pay_tuition",
+      "lane": "domain",
+      "col": 5,
+      "type": "database",
+      "label": "Gạch nợ Học phí",
+      "sublabel": "Tuition DB FOR UPDATE",
+      "sources": [
+        { "path": "services/tuition-service/app/service.py", "line": 106, "end_line": 152 }
+      ]
+    },
+    {
+      "id": "complete_tx",
+      "lane": "orchestrator",
+      "col": 5,
+      "type": "backend",
+      "label": "Hoàn tất Giao dịch",
+      "sublabel": "Lưu lịch sử & biên lai",
+      "tag": "SUCCESS",
+      "sources": [
+        { "path": "services/payment-service/app/service.py", "line": 395, "end_line": 448 }
+      ]
+    },
+    {
+      "id": "notify_worker",
+      "lane": "security_async",
+      "col": 5,
+      "type": "messagebus",
+      "label": "Notification Worker",
+      "sublabel": "RabbitMQ -> Gmail SMTP",
+      "sources": [
+        { "path": "services/notification-service/app/consumer.py", "line": 47, "end_line": 59 },
+        { "path": "services/notification-service/app/consumer.py", "line": 224, "end_line": 268 }
+      ]
+    }
+  ],
+  "edges": [
+    { "id": "e_login_gate", "from": "login_auth", "to": "jwt_gate", "label": "cấp JWT", "variant": "security" },
+    { "id": "e_gate_lookup", "from": "jwt_gate", "to": "tuition_lookup", "label": "tra cứu MSSV", "variant": "default" },
+    { "id": "e_lookup_init", "from": "tuition_lookup", "to": "initiate_tx", "label": "khởi tạo", "variant": "emphasis" },
+    { "id": "e_init_confirm", "from": "initiate_tx", "to": "confirm_tx", "label": "xác nhận", "variant": "emphasis" },
+    { "id": "e_confirm_otp", "from": "confirm_tx", "to": "otp_gen", "label": "POST /otp/generate", "variant": "security" },
+    { "id": "e_otp_verify", "from": "otp_gen", "to": "verify_saga", "label": "nhập mã OTP", "variant": "emphasis" },
+    { "id": "e_verify_deduct", "from": "verify_saga", "to": "deduct_balance", "label": "1. trừ tiền", "variant": "emphasis" },
+    { "id": "e_deduct_pay", "from": "deduct_balance", "to": "pay_tuition", "label": "2. gạch nợ", "variant": "emphasis" },
+    { "id": "e_pay_complete", "from": "pay_tuition", "to": "complete_tx", "label": "đánh dấu PAID", "variant": "emphasis" },
+    { "id": "e_complete_notify", "from": "complete_tx", "to": "notify_worker", "label": "payment_success", "variant": "dashed", "role": "async" },
+    { "id": "e_pay_fail_comp", "from": "pay_tuition", "to": "compensate_refund", "label": "lỗi gạch nợ", "variant": "security", "role": "error" },
+    { "id": "e_otp_notify", "from": "otp_gen", "to": "notify_worker", "label": "otp_email", "variant": "dashed", "role": "async", "fromSide": "bottom", "toSide": "bottom", "route": "bottom-channel" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Điều phối Giao dịch Phân tán (Saga Orchestration)",
+      "items": [
+        "Payment Service đóng vai trò Orchestrator điều phối tuần tự: Kiểm tra hạn mức -> Xác thực OTP -> Trừ tiền User DB -> Gạch nợ Tuition DB",
+        "Nếu bước gạch nợ học phí tại Tuition Service thất bại (409/503), Orchestrator tự động kích hoạt Compensating Transaction hoàn tiền lại vào User DB"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Kiểm soát Tương tranh & Bất đồng bộ",
+      "items": [
+        "Sử dụng khóa bi quan Pessimistic Locking (SELECT ... FOR UPDATE) tại cả UserProfile, TuitionFee, Transaction và OTPCode để chống Race Condition",
+        "Tách biệt tác vụ gửi email OTP và biên lai thanh toán qua hàng đợi RabbitMQ (otp_email, payment_success) với cơ chế retry exponential backoff"
+      ]
+    }
+  ]
+}

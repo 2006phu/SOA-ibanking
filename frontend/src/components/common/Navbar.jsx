@@ -2,6 +2,13 @@ import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
+import {
+  BankLogoIcon,
+  HomeIcon,
+  CreditCardIcon,
+  ReceiptIcon,
+  LogoutIcon,
+} from './Icons';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -27,7 +34,9 @@ const Navbar = () => {
       <div className="navbar-container">
         {/* Brand */}
         <Link to="/dashboard" className="navbar-brand">
-          <div className="brand-icon">iB</div>
+          <div className="brand-icon">
+            <BankLogoIcon size={20} />
+          </div>
           <div className="brand-info">
             <div className="brand-title">
               iBanking <span className="brand-badge">TDTU</span>
@@ -36,27 +45,27 @@ const Navbar = () => {
           </div>
         </Link>
 
-        {/* Navigation Links */}
+        {/* Navigation Links with Clean SVG Icons */}
         <div className="navbar-menu">
           <Link
             to="/dashboard"
             className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
           >
-            <span>🏠</span>
+            <HomeIcon size={17} className="nav-icon" />
             <span>Tổng quan</span>
           </Link>
           <Link
             to="/payment"
             className={`nav-link ${location.pathname === '/payment' ? 'active' : ''}`}
           >
-            <span>💳</span>
+            <CreditCardIcon size={17} className="nav-icon" />
             <span>Nộp học phí</span>
           </Link>
           <Link
             to="/history"
             className={`nav-link ${location.pathname === '/history' ? 'active' : ''}`}
           >
-            <span>📜</span>
+            <ReceiptIcon size={17} className="nav-icon" />
             <span>Lịch sử</span>
           </Link>
         </div>
@@ -79,7 +88,8 @@ const Navbar = () => {
               className="btn-logout"
               title="Đăng xuất khỏi hệ thống"
             >
-              Đăng xuất
+              <LogoutIcon size={14} />
+              <span>Đăng xuất</span>
             </button>
           </div>
         </div>

@@ -14,6 +14,9 @@ import json
 
 import os
 BASE_URL = os.getenv("GATEWAY_URL", "http://localhost:8000/api")
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
+USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://localhost:8002")
+TUITION_SERVICE_URL = os.getenv("TUITION_SERVICE_URL", "http://localhost:8003")
 
 # ============================================================
 # Seed Users (will be created in Auth Service -> synced to User Service)
@@ -27,6 +30,33 @@ SEED_USERS = [
         "phone": "0987654321",
         "email": "524h0121@student.tdtu.edu.vn",
         "balance": 80000000.00  # 80 triệu
+    },
+    {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "username": "student1",
+        "password": "password123",
+        "full_name": "Sinh Viên Demo",
+        "phone": "0901111111",
+        "email": "student1@tdtu.edu.vn",
+        "balance": 15000000.00  # 15 triệu
+    },
+    {
+        "id": "10000000-0000-0000-0000-000000000002",
+        "username": "parent1",
+        "password": "password123",
+        "full_name": "Phụ Huynh Demo",
+        "phone": "0902222222",
+        "email": "parent1@tdtu.edu.vn",
+        "balance": 25000000.00  # 25 triệu
+    },
+    {
+        "id": "10000000-0000-0000-0000-000000000003",
+        "username": "rich_user",
+        "password": "password123",
+        "full_name": "Tài Khoản VIP Demo",
+        "phone": "0903333333",
+        "email": "rich_user@tdtu.edu.vn",
+        "balance": 100000000.00  # 100 triệu
     },
     {
         "id": "11111111-1111-1111-1111-111111111111",
@@ -168,7 +198,7 @@ async def seed_auth_and_users():
     print("🔐 Seeding Users (Auth Service + User Service)")
     print("="*60)
     
-    async with httpx.AsyncClient(base_url="http://localhost:8001", timeout=10.0) as client:
+    async with httpx.AsyncClient(base_url=AUTH_SERVICE_URL, timeout=10.0) as client:
         for user in SEED_USERS:
             try:
                 response = await client.post("/api/auth/seed-user", json=user)
@@ -182,7 +212,7 @@ async def seed_auth_and_users():
                 print(f"  ❌ Error creating {user['username']}: {e}")
     
     # Also seed into User Service
-    async with httpx.AsyncClient(base_url="http://localhost:8002", timeout=10.0) as client:
+    async with httpx.AsyncClient(base_url=USER_SERVICE_URL, timeout=10.0) as client:
         for user in SEED_USERS:
             try:
                 user_data = {
@@ -209,21 +239,35 @@ async def seed_students_and_tuition():
     print("🎓 Seeding Students & Tuition Fees")
     print("="*60)
     
-    async with httpx.AsyncClient(base_url="http://localhost:8003", timeout=10.0) as client:
+    async with httpx.AsyncClient(base_url=TUITION_SERVICE_URL, timeout=10.0) as client:
+        try:
+            # Trigger initial seed
+            await client.post("/api/tuition/seed")
+        except Exception:
+            pass
+
         for student in SEED_STUDENTS:
             try:
-                response = await client.post("/api/tuition/seed", json=student)
-                if response.status_code in (200, 201):
-                    unpaid = sum(1 for f in student["tuition_fees"] if f["status"] == "UNPAID")
-                    total = sum(f["amount"] for f in student["tuition_fees"] if f["status"] == "UNPAID")
-                    print(f"  ✅ {student['mssv']} - {student['full_name']}")
-                    print(f"     {student['program']} | {unpaid} khoản UNPAID | Tổng: {total:,.0f} VND")
-                elif response.status_code == 409:
-                    print(f"  ⏭️  Already exists: {student['mssv']} - {student['full_name']}")
-                else:
-                    print(f"  ❌ Failed: {response.status_code} {response.text}")
+                # Add student
+                s_resp = await client.post("/api/tuition/students", json={
+                    "mssv": student["mssv"],
+                    "full_name": student["full_name"],
+                    "program": student["program"],
+                })
+                # Add fees
+                for fee in student.get("tuition_fees", []):
+                    await client.post("/api/tuition/fees", json={
+                        "student_mssv": student["mssv"],
+                        "semester": fee["semester"],
+                        "amount": fee["amount"],
+                    })
+
+                unpaid = sum(1 for f in student["tuition_fees"] if f["status"] == "UNPAID")
+                total = sum(f["amount"] for f in student["tuition_fees"] if f["status"] == "UNPAID")
+                print(f"  ✅ {student['mssv']} - {student['full_name']}")
+                print(f"     {student['program']} | {unpaid} khoản UNPAID | Tổng: {total:,.0f} VND")
             except Exception as e:
-                print(f"  ❌ Error: {e}")
+                print(f"  ❌ Error seeding student {student['mssv']}: {e}")
 
 
 async def verify_seed():
@@ -233,23 +277,23 @@ async def verify_seed():
     print("="*60)
     
     # Check auth
-    async with httpx.AsyncClient(base_url="http://localhost:8001", timeout=10.0) as client:
+    async with httpx.AsyncClient(base_url=AUTH_SERVICE_URL, timeout=10.0) as client:
         try:
             response = await client.post("/api/auth/login", json={
-                "username": "nguyenvana",
-                "password": "password123"
+                "username": "lephu",
+                "password": "235780"
             })
             if response.status_code == 200:
                 data = response.json()
-                print(f"  ✅ Auth: Login works for 'nguyenvana'")
+                print(f"  ✅ Auth: Login works for 'lephu'!")
                 print(f"     Token: {data['access_token'][:30]}...")
             else:
-                print(f"  ❌ Auth: Login failed: {response.status_code}")
+                print(f"  ❌ Auth: Login failed for 'lephu': {response.status_code} {response.text}")
         except Exception as e:
             print(f"  ❌ Auth check error: {e}")
     
     # Check tuition
-    async with httpx.AsyncClient(base_url="http://localhost:8003", timeout=10.0) as client:
+    async with httpx.AsyncClient(base_url=TUITION_SERVICE_URL, timeout=10.0) as client:
         try:
             response = await client.get("/api/tuition/52100001")
             if response.status_code == 200:

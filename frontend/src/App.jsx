@@ -9,44 +9,58 @@ import Dashboard from './components/Dashboard/Dashboard';
 import TuitionPayment from './components/TuitionPayment/TuitionPayment';
 import TransactionHistory from './components/TransactionHistory/TransactionHistory';
 
+// Main layout wrapper for protected dashboard pages (with Navbar and responsive container)
+const DashboardLayout = ({ children }) => (
+  <div className="app-container">
+    <Navbar />
+    <main className="main-content">
+      {children}
+    </main>
+  </div>
+);
+
 function App() {
   return (
     <Router>
       <AuthProvider>
         <ToastProvider>
-          <div className="app-container">
-            <Navbar />
-            <main className="main-content">
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route 
-                  path="/dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/payment" 
-                  element={
-                    <ProtectedRoute>
-                      <TuitionPayment />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/history" 
-                  element={
-                    <ProtectedRoute>
-                      <TransactionHistory />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            </main>
-          </div>
+          <Routes>
+            {/* Standalone full-screen Login Page (No white frame around) */}
+            <Route path="/login" element={<Login />} />
+
+            {/* Protected Dashboard Pages */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Dashboard />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payment"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <TuitionPayment />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <TransactionHistory />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
         </ToastProvider>
       </AuthProvider>
     </Router>

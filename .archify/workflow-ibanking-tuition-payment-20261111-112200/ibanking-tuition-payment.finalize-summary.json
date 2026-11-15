@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "D:\\University\\SOA\\SOA-ibanking\\.archify\\workflow-ibanking-tuition-payment-20261111-112200\\candidate.json",
+    "sha256": "9945786379a8b34b1bb4b6f26b521e2c0577b171dd90203b9b921d5e35ba930e",
+    "bytes": 8374
+  },
+  "artifact": {
+    "path": "D:\\University\\SOA\\SOA-ibanking\\.archify\\workflow-ibanking-tuition-payment-20261111-112200\\ibanking-tuition-payment.html",
+    "sha256": "8081cf1df0913cf3df0bca523e08ba143bcea8a209ade8fdd9f4b7e809fd75d7",
+    "bytes": 839332
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "D:\\University\\SOA\\SOA-ibanking\\.archify\\workflow-ibanking-tuition-payment-20261111-112200\\ibanking-tuition-payment.finalize.json",
+    "summaryReceipt": "D:\\University\\SOA\\SOA-ibanking\\.archify\\workflow-ibanking-tuition-payment-20261111-112200\\ibanking-tuition-payment.finalize-summary.json",
+    "browserCheckReceipt": "D:\\University\\SOA\\SOA-ibanking\\.archify\\workflow-ibanking-tuition-payment-20261111-112200\\ibanking-tuition-payment.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-11T04:23:29.688Z",
+    "source": "network",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 5351,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

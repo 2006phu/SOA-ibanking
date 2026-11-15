@@ -1,46 +1,58 @@
-KỊCH BẢN THUYẾT TRÌNH - TẬP TRUNG VÀO PHÂN TÍCH SƠ ĐỒ VÀ LUỒNG HOẠT ĐỘNG
+KỊCH BẢN THUYẾT TRÌNH GIỮA KỲ — NHÓM SOA.26-19
+(Đồng bộ với docs/Slide_SOA_v2.pptx — Thời lượng: 10 phút trình bày & demo + 5 phút hỏi đáp)
 
----
-Slide 1: Lời chào và Giới thiệu
-"Kính chào thầy Dương Hữu Phúc và các bạn. Hôm nay, nhóm SOA.26-19 xin trình bày báo cáo giữa kỳ môn Kiến trúc Hướng Dịch vụ. Đề tài của nhóm là Hệ thống thanh toán học phí trực tuyến iBanking, được thiết kế chuyên sâu trên nền tảng Microservices."
+=== PHẦN 1: TỔNG QUAN (1 PHÚT | SLIDE 1–3 | VŨ GIANG HUY) ===
 
----
-Slide 2: Thành viên nhóm
-"Nhóm gồm 2 thành viên là Lê Phú và Vũ Giang Huy. Công việc được phân chia rõ ràng để bao quát toàn bộ từ khâu phân tích thiết kế, vẽ lược đồ, cho đến lập trình backend, frontend và triển khai hệ thống."
+[Slide 1–2] Chào hỏi & Nhóm:
+"Em xin kính chào thầy Dương Hữu Phúc và các bạn. Em là Vũ Giang Huy, đại diện nhóm SOA.26-19 gồm bạn Lê Phú (524H0121) và em (524H0095), xin trình bày đồ án giữa kỳ: Hệ thống Thanh toán Học phí Trực tuyến iBanking theo kiến trúc Microservices."
 
----
-Slide 3: Tổng quan & Sơ đồ Usecase
-"Nhìn vào sơ đồ Usecase trên slide, mọi người có thể thấy luồng tương tác chính. Ở bên trái, người dùng (Sinh viên hoặc Phụ huynh) sẽ thao tác tuần tự từ đăng nhập, xem số dư, đến khởi tạo thanh toán và nhập OTP. 
-Tuy nhiên, điểm nhấn nằm ở bên phải màn hình: Hệ thống của chúng em không đứng độc lập mà có sự kết nối với 2 hệ thống ngoại vi (External Systems) là RabbitMQ và Gmail SMTP. Việc tách các hệ thống này ra khỏi cụm tính toán chính giúp hệ thống xử lý các tác vụ nặng (như gửi email) một cách bất đồng bộ, không bao giờ bị nghẽn."
+[Slide 3] Tổng quan & Use Case Diagram:
+"Trên Slide 3 là Use Case Diagram của hệ thống. Giao diện React SPA cho phép Sinh viên hoặc Phụ huynh thực hiện 6 nghiệp vụ chính: Đăng nhập JWT, xem số dư thời gian thực, tra cứu học phí theo MSSV, khởi tạo thanh toán có Idempotency, xác thực mã OTP 6 chữ số gửi qua email thật, và xem lịch sử kèm biên lai.
+Ở bên phải sơ đồ là 2 hệ thống ngoại vi: RabbitMQ và Gmail SMTP. Việc tách luồng email sang xử lý bất đồng bộ giúp giao dịch chính không bị nghẽn."
 
----
-Slide 4: Sơ đồ Kiến trúc Microservices
-"Mời thầy và các bạn xem sơ đồ kiến trúc tổng thể. Từ tầng Frontend trên cùng, mọi request đều phải đi qua 'chốt chặn' API Gateway. Gateway sẽ lo việc xác thực token và định tuyến mũi tên request xuống đúng 6 Microservices bên dưới. 
-Nhìn vào nửa dưới của sơ đồ, các bạn sẽ thấy tầng Database. Chúng em áp dụng triệt để nguyên tắc Database-per-service: 5 khối database PostgreSQL hoàn toàn tách biệt. Các service không dùng chung DB, mà chúng phải giao tiếp với nhau qua HTTP REST API hoặc qua Message Broker RabbitMQ ở bên phải."
+=== PHẦN 2: PHÂN TÍCH & THIẾT KẾ (2 PHÚT | SLIDE 4–7 | HUY -> PHÚ) ===
 
----
-Slide 5: Luồng hoạt động Thanh toán (Core Workflow)
-"Đi sâu vào luồng thanh toán, quá trình này là một chuỗi phối hợp nhịp nhàng. Khởi đầu, Payment Service đóng vai trò tiếp nhận và gọi chéo sang User/Tuition để kiểm tra chéo điều kiện. Tiếp đến là cụm OTP: Hệ thống sinh mã, ném sự kiện vào RabbitMQ để gửi Email. Cuối cùng và quan trọng nhất là cụm Thực thi (Execution): Tài khoản bị trừ tiền và học phí được gạch nợ. Quá trình này đòi hỏi đường đi của request phải được kiểm soát cực kỳ nghiêm ngặt."
+[Slide 4] Microservices Architecture & API Gateway:
+"Về kiến trúc tổng thể (Slide 4), mọi request từ React Client đều đi qua duy nhất một cổng API Gateway ở port 8000 để xác thực HS256 JWT, gán X-User-ID và X-Correlation-ID.
+Bên dưới là 6 Microservices FastAPI và 5 database PostgreSQL độc lập. Nhóm chọn Microservices để dễ mở rộng riêng cụm Payment/OTP, tách bạch quyền sở hữu dữ liệu và cô lập lỗi khi Gmail SMTP chậm."
 
----
-Slide 6: Sơ đồ Tuần tự & Saga Pattern (Điểm nhấn quan trọng nhất)
-"Đây là Sơ đồ tuần tự (Sequence Diagram) thể hiện phần lõi phức tạp nhất của dự án. Mời mọi người tập trung vào nửa dưới sơ đồ (khu vực Critical Section màu đen). 
-Ở đây, Payment Service đang đóng vai trò 'nhạc trưởng' (Orchestrator). Đầu tiên, Payment bắn mũi tên gọi User Service trừ tiền -> Thành công. Tiếp tục, Payment bắn mũi tên gọi Tuition Service để gạch nợ. 
-Sẽ ra sao nếu Tuition báo lỗi (ví dụ do có người nộp trước)? Lúc này, mũi tên nét đứt (409 Conflict) sẽ dội ngược về Payment. Ngay lập tức, Payment Service kích hoạt kịch bản Rollback (Bù đắp), nó bắn một mũi tên gọi hàm Refund sang User Service để hoàn lại 100% tiền. Sơ đồ này minh chứng rõ ràng việc hệ thống của chúng em đảm bảo tuyệt đối tính toàn vẹn dữ liệu (ACID) dù không dùng chung Database."
+[Slide 5] Phân rã Service & Data Ownership:
+"Slide 5 tóm tắt 7 thành phần backend:
+- auth-service (auth_db): mật khẩu bcrypt, cấp phát JWT.
+- user-service (user_db): quản lý số dư ví, khóa dòng trừ/hoàn tiền và lịch sử ví.
+- tuition-service (tuition_db): hồ sơ sinh viên và công nợ học phí UNPAID/PAID.
+- payment-service (payment_db): Saga Orchestrator, Idempotency-Key và sổ cái giao dịch.
+- otp-service (otp_db): sinh, khóa dòng và xác thực OTP gắn 1-1 với giao dịch.
+- notification-service: Stateless Worker lắng nghe RabbitMQ để gửi email."
 
----
-Slide 7: Xử lý Tương tranh (Pessimistic Locking)
-"Cũng trong lúc thực thi các mũi tên ở sơ đồ tuần tự vừa rồi, hệ thống phải đối mặt với lỗi Tương tranh (Concurrency). Cách xử lý là chèn thêm lệnh `SELECT ... FOR UPDATE` trực tiếp vào Database. Lệnh này khóa cứng dòng tiền của sinh viên lại, bắt mọi request đến sau phải xếp hàng. Nhờ vậy, lỗi 'Double-spending' (nhấn đúp 2 lần thanh toán) được xử lý triệt để."
+[Slide 6] Database-per-Service Physical ERD:
+"Slide 6 là sơ đồ ERD phân tán chuẩn SOA gồm 5 DB PostgreSQL tách biệt.
+Đường nét liền là khóa ngoại vật lý trong cùng một DB (user_db và tuition_db). Đường nét đứt chỉ là tham chiếu logic qua UUID/MSSV, tuyệt đối không có FK hay JOIN xuyên DB. Toàn bộ cột tiền tệ dùng Numeric(15, 2), kèm các ràng buộc UNIQUE và CHECK amount > 0."
 
----
-Slide 8: Giao tiếp bất đồng bộ (Asynchronous)
-"Quay lại với sơ đồ kiến trúc ban đầu, khối RabbitMQ đóng vai trò làm hàng đợi. Thay vì gọi API trực tiếp để gửi Email khiến request bị treo mất 3-4 giây, Payment và OTP service chỉ việc ném dữ liệu vào hàng đợi và trả kết quả ngay cho người dùng. Khối Notification Service sẽ tự động nhặt các sự kiện này và gửi thư qua SMTP."
+[Slide 7] REST API Design (Lê Phú tiếp tục):
+"Slide 7 trình bày thiết kế REST API qua Gateway :8000 cho Auth, User, Tuition và chuỗi 3 bước Payment: initiate (kèm Idempotency-Key trả 201), confirm (gửi OTP trả 200), và verify-otp (trả 200, 401 sai OTP, 409 học phí đã trả kèm hoàn tiền, hoặc 429 khóa brute-force). Dữ liệu được validate bằng Pydantic v2 (422) và có Swagger /docs ở mỗi service."
 
----
-Slide 9: Lược đồ Cơ sở dữ liệu (ERD)
-"Tiếp theo là sơ đồ thiết kế CSDL (ERD). Vì hệ thống không có khóa ngoại (Foreign Key) chéo giữa các service, chúng em phải thiết kế phân rã dữ liệu hợp lý. Ở chính giữa sơ đồ là bảng Transaction của Payment Service, nó lưu trữ toàn bộ UserID, TuitionID, và số dư trước/sau để làm căn cứ đối soát lịch sử độc lập. Đặc biệt, bảng này có trường Idempotency Key giúp chặn đứng mọi request thanh toán trùng lặp từ Frontend dội xuống."
+=== PHẦN 3: GIẢI PHÁP KỸ THUẬT (2 PHÚT | SLIDE 8–12 | LÊ PHÚ) ===
 
----
-Slide 10 & 11: Đánh giá & Mức độ hoàn thành
-"Nhìn chung, hệ thống giải quyết trọn vẹn các bài toán khó nhất của thiết kế phân tán: Toàn vẹn dữ liệu, Tương tranh và Hiệu năng bất đồng bộ. Nhóm tự tin đã hoàn thành 100% các tiêu chí khắt khe của đồ án. 
-Sau đây, nhóm xin phép được Demo trực tiếp trên giao diện và chạy Script tự động giả lập người dùng bắn phá hệ thống để chứng minh tính năng chống tương tranh. Cảm ơn thầy và các bạn đã lắng nghe!"
+[Slide 8–9] Workflow 5 giai đoạn & Bảo mật OTP:
+"Slide 8 là Workflow xuyên suốt 5 bước. Ở Slide 9, cơ chế OTP 6 số sử dụng bộ sinh ngẫu nhiên mật mã học secrets.choice (CSPRNG), gắn 1-1 với transaction_id (UNIQUE), hiệu lực 5 phút, dùng 1 lần (is_used), so sánh secrets.compare_digest và tự khóa HTTP 429 sau 5 lần nhập sai. Đặc biệt khi OTP_DEBUG_EXPOSE=false, mã OTP không bị lộ ra API hay log mà chỉ đi qua RabbitMQ tới Gmail."
+
+[Slide 10] Distributed Transaction (Saga Orchestration):
+"Slide 10 giải quyết giao dịch phân tán giữa user_db và tuition_db mà không dùng 2PC gây treo khóa. PaymentService đóng vai trò Orchestrator đảm bảo ACID cục bộ trong từng DB và Eventual Consistency toàn cục qua state machine PENDING -> OTP_SENT -> SUCCESS | FAILED | REFUNDED. Nếu trừ tiền xong nhưng gạch nợ báo 409 Conflict, Saga lập tức gọi Refund hoàn tiền."
+
+[Slide 11] Concurrency Control (Pessimistic Locking):
+"Slide 11 giải quyết 2 kịch bản tranh chấp bằng SELECT ... FOR UPDATE (.with_for_update()):
+- Kịch bản 1 (Cùng 1 tài khoản bắn 2 lệnh vượt số dư): user-service khóa dòng user_profiles -> lệnh 1 trừ tiền, lệnh 2 đợi xong đọc số dư mới, không đủ nên trả 400 FAILED, số dư không âm.
+- Kịch bản 2 (2 người đóng cùng 1 học phí): tuition-service khóa dòng tuition_fees -> người 1 thành công 200 PAID, người 2 nhận 409 Conflict và được Saga hoàn tiền."
+
+[Slide 12] Async Messaging (RabbitMQ) & Tracing:
+"Slide 12 là luồng RabbitMQ với 2 hàng đợi otp_email và payment_success. Notification Worker dùng Exponential Backoff retry 3 lần (1s -> 2s -> 4s), và toàn bộ request/message mang X-Correlation-ID để truy vết log tập trung."
+
+=== PHẦN 4: LIVE DEMO (5 PHÚT | SLIDE 13–14) ===
+
+1. [Mở React UI http://localhost:3000] Đăng nhập tài khoản 'lephu' (mật khẩu '235780'), chỉ số dư 80,000,000 VND.
+2. Tra cứu MSSV '52100002' (Ngô Thị Mai Anh), chọn khoản HK2 2025-2026 (14,500,000 VND) -> Thanh toán -> Xác nhận gửi OTP.
+3. Mở hộp thư Gmail thật nhận mã OTP -> nhập OTP trên UI -> chứng minh số dư còn 65,500,000 VND, học phí chuyển PAID, xem Lịch sử giao dịch và email Biên lai điện tử.
+4. [Mở PowerShell Terminal] Chạy: .\.venv\Scripts\python.exe -m pytest tests/test_otp_and_saga.py -v (chứng minh 8/8 automated tests PASS).
+5. Chạy: python scripts/test_concurrency_scenarios.py (chứng minh trực tiếp Kịch bản 1 trả 1/2 SUCCESS + 1/2 HTTP 400, và Kịch bản 2 trả 1/2 SUCCESS + 1/2 HTTP 409 + Saga Refund).
+6. [Quay lại Slide 14–15] Chốt bảng đối chiếu Rubric 10/10 & Mời giảng viên đặt câu hỏi.

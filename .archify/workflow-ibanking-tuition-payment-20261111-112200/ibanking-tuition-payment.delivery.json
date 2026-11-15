@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "eaf3c24c-8a39-410e-b9db-b5c3ba780c13",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\University\\SOA\\SOA-ibanking\\.archify\\workflow-ibanking-tuition-payment-20261111-112200\\candidate.json",
+  "output": "D:\\University\\SOA\\SOA-ibanking\\.archify\\workflow-ibanking-tuition-payment-20261111-112200\\ibanking-tuition-payment.html",
+  "specification": {
+    "sha256": "9945786379a8b34b1bb4b6f26b521e2c0577b171dd90203b9b921d5e35ba930e",
+    "bytes": 8374
+  },
+  "artifact": {
+    "sha256": "8081cf1df0913cf3df0bca523e08ba143bcea8a209ade8fdd9f4b7e809fd75d7",
+    "bytes": 839332
+  }
+}

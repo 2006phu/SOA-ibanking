@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     RABBITMQ_URL: str = "amqp://ibanking:rabbitmq_secret_2026@rabbitmq:5672/"
     OTP_EXPIRATION_MINUTES: int = 5
     OTP_LENGTH: int = 6
+    OTP_MAX_ATTEMPTS: int = 5
+    # Dev/test only: include the OTP in the API response (never enable in production)
+    OTP_DEBUG_EXPOSE: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",

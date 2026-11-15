@@ -1,7 +1,6 @@
 import json
 import logging
-import random
-import string
+import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -92,7 +91,8 @@ rabbitmq_client = RabbitMQClient()
 class OTPService:
     @staticmethod
     def generate_random_code(length: int) -> str:
-        return "".join(random.choices(string.digits, k=length))
+        # Cryptographically secure RNG (random.choices is predictable)
+        return "".join(secrets.choice("0123456789") for _ in range(length))
 
     @staticmethod
     async def generate_otp(db: AsyncSession, request: OTPGenerateRequest) -> dict:
@@ -132,7 +132,7 @@ class OTPService:
         await db.refresh(new_otp)
 
         logger.info(
-            f"==================== [OTP CODE]: {code} for txn: {request.transaction_id} ===================="
+            f"OTP generated for txn {request.transaction_id} (expires at {expires_at.isoformat()})"
         )
 
         # Publish message to RabbitMQ queue 'otp_email'
@@ -149,7 +149,7 @@ class OTPService:
             "otp_id": new_otp.id,
             "transaction_id": new_otp.transaction_id,
             "expires_at": new_otp.expires_at,
-            "otp_code": code,
+            "otp_code": code if settings.OTP_DEBUG_EXPOSE else None,
         }
 
     @staticmethod
@@ -192,9 +192,23 @@ class OTPService:
                 detail="OTP expired",
             )
 
-        # 4. Code matches -> 401 "Invalid OTP code"
-        if otp.code != request.otp_code.strip():
-            logger.warning(f"OTP verification failed: transaction {request.transaction_id} code mismatch")
+        # 4. Brute-force protection: too many wrong attempts -> 429
+        if otp.failed_attempts >= settings.OTP_MAX_ATTEMPTS:
+            logger.warning(f"OTP locked for transaction {request.transaction_id}: too many attempts")
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many invalid OTP attempts. Please request a new OTP.",
+            )
+
+        # 5. Code matches (constant-time compare) -> 401 "Invalid OTP code"
+        if not secrets.compare_digest(otp.code, request.otp_code.strip()):
+            otp.failed_attempts += 1
+            # Commit explicitly: get_db() rolls back when an exception is raised
+            await db.commit()
+            logger.warning(
+                f"OTP verification failed: transaction {request.transaction_id} code mismatch "
+                f"({otp.failed_attempts}/{settings.OTP_MAX_ATTEMPTS})"
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid OTP code",

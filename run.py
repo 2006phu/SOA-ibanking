@@ -88,7 +88,14 @@ def seed_data():
         )
         # Execute inside container
         subprocess.run(
-            ["docker", "compose", "exec", "-T", "-e", "GATEWAY_URL=http://gateway:8000/api", "payment-service", "python", "/app/seed_data.py"],
+            [
+                "docker", "compose", "exec", "-T",
+                "-e", "GATEWAY_URL=http://gateway:8000/api",
+                "-e", "AUTH_SERVICE_URL=http://auth-service:8001",
+                "-e", "USER_SERVICE_URL=http://user-service:8002",
+                "-e", "TUITION_SERVICE_URL=http://tuition-service:8003",
+                "payment-service", "python", "/app/seed_data.py"
+            ],
             check=True
         )
         print("    -- Dữ liệu mẫu đã được nạp thành công!\n")

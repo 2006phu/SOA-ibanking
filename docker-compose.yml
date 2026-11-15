@@ -118,6 +118,8 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${OTP_DB_NAME}
       OTP_EXPIRATION_MINUTES: ${OTP_EXPIRATION_MINUTES}
       OTP_LENGTH: ${OTP_LENGTH}
+      OTP_MAX_ATTEMPTS: ${OTP_MAX_ATTEMPTS:-5}
+      OTP_DEBUG_EXPOSE: ${OTP_DEBUG_EXPOSE:-false}
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:${RABBITMQ_PORT}/
     depends_on:
       postgres:

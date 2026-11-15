@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
 import { formatCurrency, formatDateTime, formatTransactionStatus } from '../../utils/formatters';
 import Loading from '../common/Loading';
+import {
+  CheckCircleIcon,
+  SyncIcon,
+  XCircleIcon,
+  AlertCircleIcon,
+  InboxEmptyIcon,
+  XIcon,
+  PrinterIcon,
+  ArrowRightIcon,
+} from '../common/Icons';
 import './TransactionHistory.css';
 
 const TransactionHistory = () => {
@@ -85,28 +95,28 @@ const TransactionHistory = () => {
               className={`filter-chip-btn ${statusFilter === 'SUCCESS' ? 'active' : ''}`}
               onClick={() => setStatusFilter('SUCCESS')}
             >
-              ✅ Thành công
+              <CheckCircleIcon size={14} style={{ marginRight: '5px' }} /> Thành công
             </button>
             <button
               type="button"
               className={`filter-chip-btn ${statusFilter === 'REFUNDED' ? 'active' : ''}`}
               onClick={() => setStatusFilter('REFUNDED')}
             >
-              🔄 Đã hoàn tiền
+              <SyncIcon size={14} style={{ marginRight: '5px' }} /> Đã hoàn tiền
             </button>
             <button
               type="button"
               className={`filter-chip-btn ${statusFilter === 'FAILED' ? 'active' : ''}`}
               onClick={() => setStatusFilter('FAILED')}
             >
-              ❌ Thất bại
+              <XCircleIcon size={14} style={{ marginRight: '5px' }} /> Thất bại
             </button>
           </div>
 
           <input
             type="text"
             className="history-search-input"
-            placeholder="🔍 Tìm theo MSSV, tên SV, TxID..."
+            placeholder="Tìm theo MSSV, tên SV, TxID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -114,7 +124,7 @@ const TransactionHistory = () => {
 
         {error && (
           <div className="login-error" style={{ marginBottom: '1.25rem' }}>
-            <span>⚠️</span>
+            <AlertCircleIcon size={18} style={{ flexShrink: 0 }} />
             <div>{error}</div>
           </div>
         )}
@@ -125,7 +135,9 @@ const TransactionHistory = () => {
           </div>
         ) : filteredTransactions.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>📭</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem', color: '#94a3b8' }}>
+              <InboxEmptyIcon size={48} />
+            </div>
             <h3 style={{ fontSize: '1.15rem', color: '#0f172a', marginBottom: '0.25rem' }}>
               Không tìm thấy giao dịch nào
             </h3>
@@ -181,8 +193,8 @@ const TransactionHistory = () => {
                         </span>
                       </td>
                       <td style={{ textAlign: 'right' }}>
-                        <span style={{ color: 'var(--primary-600)', fontWeight: 600, fontSize: '0.8rem' }}>
-                          Xem biên lai →
+                        <span style={{ color: 'var(--primary-600)', fontWeight: 600, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center' }}>
+                          Xem biên lai <ArrowRightIcon size={13} style={{ marginLeft: '4px' }} />
                         </span>
                       </td>
                     </tr>
@@ -234,8 +246,9 @@ const TransactionHistory = () => {
                 type="button"
                 className="btn-close-modal"
                 onClick={() => setSelectedTx(null)}
+                aria-label="Đóng"
               >
-                ✕
+                <XIcon size={18} />
               </button>
             </div>
 
@@ -295,8 +308,9 @@ const TransactionHistory = () => {
                 type="button"
                 className="btn btn-secondary btn-sm"
                 onClick={() => window.print()}
+                style={{ display: 'inline-flex', alignItems: 'center' }}
               >
-                🖨️ In biên lai
+                <PrinterIcon size={15} style={{ marginRight: '6px' }} /> In biên lai
               </button>
               <button
                 type="button"

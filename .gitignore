@@ -34,3 +34,8 @@ Thumbs.db
 # Database
 *.db
 *.sqlite3
+
+# Test & Office temp lock files
+.pytest_cache/
+~$*
+

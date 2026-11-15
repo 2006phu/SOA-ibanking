@@ -28,3 +28,8 @@ async def init_db():
     from app import models  # noqa: F401
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Lightweight migration for databases created before failed_attempts existed
+        await conn.exec_driver_sql(
+            "ALTER TABLE otp_codes ADD COLUMN IF NOT EXISTS "
+            "failed_attempts INTEGER NOT NULL DEFAULT 0"
+        )

@@ -226,7 +226,7 @@ class PaymentService:
         tx.status = "OTP_SENT"
         await db.commit()
         await db.refresh(tx)
-        logger.info(f"Transaction {tx.id} transitioned to OTP_SENT with OTP code: {otp_code}")
+        logger.info(f"Transaction {tx.id} transitioned to OTP_SENT")
         return tx, otp_code
 
     @staticmethod
@@ -304,10 +304,11 @@ class PaymentService:
                 if raw_balance is not None:
                     balance_after = Decimal(str(raw_balance))
         except httpx.HTTPStatusError as e:
+            # Step a failed (e.g. insufficient balance under concurrent spending).
+            # Nothing was deducted, so no compensation is needed: mark FAILED.
             logger.error(f"Failed to deduct balance for user {user_id}: {e.response.text}")
-            tx.status = "REFUNDED" if refund_success else "FAILED"
-            if refund_success and tx.user_balance_before is not None:
-                tx.user_balance_after = tx.user_balance_before
+            tx.status = "FAILED"
+            tx.user_balance_after = tx.user_balance_before
             tx.completed_at = datetime.now(timezone.utc)
             await db.commit()
             detail_msg = "Failed to deduct user balance"
@@ -319,9 +320,7 @@ class PaymentService:
             raise HTTPException(status_code=e.response.status_code, detail=detail_msg)
         except httpx.RequestError as e:
             logger.error(f"Cannot reach user service to deduct balance: {e}")
-            tx.status = "REFUNDED" if refund_success else "FAILED"
-            if refund_success and tx.user_balance_before is not None:
-                tx.user_balance_after = tx.user_balance_before
+            tx.status = "FAILED"
             tx.completed_at = datetime.now(timezone.utc)
             await db.commit()
             raise HTTPException(

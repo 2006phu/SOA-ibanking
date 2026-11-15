@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { CheckCircleIcon, AlertCircleIcon, InfoIcon } from './Icons';
 
 const ToastContext = createContext();
 
@@ -25,11 +26,11 @@ export const ToastProvider = ({ children }) => {
       {children}
       <div className="toast-container" aria-live="polite">
         {toasts.map((t) => (
-          <div key={t.id} className={`toast toast-${t.type}`}>
-            <span>
-              {t.type === 'success' && '✅'}
-              {t.type === 'error' && '⚠️'}
-              {t.type === 'info' && 'ℹ️'}
+          <div key={t.id} className={`toast toast-${t.type}`} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
+              {t.type === 'success' && <CheckCircleIcon size={18} />}
+              {t.type === 'error' && <AlertCircleIcon size={18} />}
+              {t.type === 'info' && <InfoIcon size={18} />}
             </span>
             <div style={{ flex: 1 }}>{t.message}</div>
           </div>

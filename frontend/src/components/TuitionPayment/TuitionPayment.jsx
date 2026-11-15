@@ -4,6 +4,19 @@ import axiosClient from '../../api/axiosClient';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../common/Toast';
 import { formatCurrency, formatDateTime } from '../../utils/formatters';
+import {
+  SearchIcon,
+  AlertCircleIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  LockIcon,
+  BoltIcon,
+  CopyIcon,
+  SyncIcon,
+  PrinterIcon,
+  XCircleIcon,
+  InfoIcon,
+} from '../common/Icons';
 import './TuitionPayment.css';
 
 const TuitionPayment = () => {
@@ -282,17 +295,17 @@ const TuitionPayment = () => {
           </div>
 
           <div className={`step-node ${step === 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
-            <div className="step-circle">{step > 1 ? '✓' : '1'}</div>
+            <div className="step-circle">{step > 1 ? <CheckIcon size={14} /> : '1'}</div>
             <span className="step-label">Tra cứu</span>
           </div>
 
           <div className={`step-node ${step === 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`}>
-            <div className="step-circle">{step > 2 ? '✓' : '2'}</div>
+            <div className="step-circle">{step > 2 ? <CheckIcon size={14} /> : '2'}</div>
             <span className="step-label">Xác nhận</span>
           </div>
 
           <div className={`step-node ${step === 3 ? 'active' : ''} ${step > 3 ? 'completed' : ''}`}>
-            <div className="step-circle">{step > 3 ? '✓' : '3'}</div>
+            <div className="step-circle">{step > 3 ? <CheckIcon size={14} /> : '3'}</div>
             <span className="step-label">Xác thực OTP</span>
           </div>
 
@@ -330,7 +343,11 @@ const TuitionPayment = () => {
                   disabled={isSearching || !mssv.trim()}
                   style={{ minWidth: '130px' }}
                 >
-                  {isSearching ? 'Đang tìm...' : '🔍 Tra cứu'}
+                  {isSearching ? 'Đang tìm...' : (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <SearchIcon size={16} /> Tra cứu
+                    </span>
+                  )}
                 </button>
               </div>
 
@@ -364,7 +381,7 @@ const TuitionPayment = () => {
 
           {searchError && (
             <div className="login-error" style={{ marginTop: '1rem' }}>
-              <span>⚠️</span>
+              <AlertCircleIcon size={18} style={{ flexShrink: 0 }} />
               <div>{searchError}</div>
             </div>
           )}
@@ -385,7 +402,9 @@ const TuitionPayment = () => {
 
               {studentInfo.unpaid_fees.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '2rem', background: '#f8fafc', borderRadius: '12px' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎉</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem', color: '#059669' }}>
+                    <CheckCircleIcon size={44} />
+                  </div>
                   <h4 style={{ color: '#059669', marginBottom: '0.25rem' }}>Không có khoản nợ nào!</h4>
                   <p style={{ color: '#64748b', fontSize: '0.875rem' }}>
                     Sinh viên {studentInfo.full_name} ({studentInfo.mssv}) đã hoàn thành toàn bộ học phí.
@@ -464,7 +483,7 @@ const TuitionPayment = () => {
           {/* Balance check alert */}
           {user.balance >= selectedFee.amount ? (
             <div className="balance-check-alert balance-ok">
-              <span>✅</span>
+              <CheckCircleIcon size={18} style={{ color: '#16a34a', flexShrink: 0, marginTop: '2px' }} />
               <div>
                 Số dư tài khoản đủ để thực hiện thanh toán. Sau khi thanh toán, số dư ước tính còn:{' '}
                 <strong>{formatCurrency(user.balance - selectedFee.amount)}</strong>.
@@ -472,7 +491,7 @@ const TuitionPayment = () => {
             </div>
           ) : (
             <div className="balance-check-alert balance-insufficient">
-              <span>⚠️</span>
+              <AlertCircleIcon size={18} style={{ color: '#ea580c', flexShrink: 0, marginTop: '2px' }} />
               <div>
                 <strong>Số dư không đủ:</strong> Cần thêm{' '}
                 <strong>{formatCurrency(selectedFee.amount - user.balance)}</strong> để thanh toán. Vui lòng nạp thêm tiền hoặc dùng tài khoản khác.
@@ -482,7 +501,7 @@ const TuitionPayment = () => {
 
           {confirmError && (
             <div className="login-error" style={{ margin: '1rem 0' }}>
-              <span>⚠️</span>
+              <AlertCircleIcon size={18} style={{ flexShrink: 0 }} />
               <div>{confirmError}</div>
             </div>
           )}
@@ -526,7 +545,9 @@ const TuitionPayment = () => {
       {step === 3 && (
         <div className="card" style={{ maxWidth: '580px', margin: '0 auto', width: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔐</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem', color: 'var(--primary-600)' }}>
+              <LockIcon size={44} />
+            </div>
             <h3 style={{ fontSize: '1.35rem', marginBottom: '0.35rem' }}>Xác thực mã OTP</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
               Mã bảo mật 6 số đã được gửi tới hòm thư:{' '}
@@ -538,8 +559,8 @@ const TuitionPayment = () => {
           {demoOtp && (
             <div className="demo-otp-badge">
               <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e40af', textTransform: 'uppercase' }}>
-                  ⚡ Mã OTP thực nghiệm (Demo):
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e40af', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <BoltIcon size={14} style={{ color: '#d97706' }} /> Mã OTP thực nghiệm (Demo):
                 </span>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.25rem', fontWeight: 800, color: '#1e3a8a', letterSpacing: '2px' }}>
                   {demoOtp}
@@ -549,8 +570,9 @@ const TuitionPayment = () => {
                 type="button"
                 className="btn btn-sm btn-secondary"
                 onClick={handleFillDemoOtp}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
               >
-                Tự động điền 📋
+                Tự động điền <CopyIcon size={13} />
               </button>
             </div>
           )}
@@ -587,7 +609,7 @@ const TuitionPayment = () => {
 
           {otpError && (
             <div className="login-error" style={{ marginBottom: '1.25rem' }}>
-              <span>⚠️</span>
+              <AlertCircleIcon size={18} style={{ flexShrink: 0 }} />
               <div>{otpError}</div>
             </div>
           )}
@@ -619,7 +641,13 @@ const TuitionPayment = () => {
                 onClick={handleResendOtp}
                 disabled={resendCooldown > 0 || isVerifying}
               >
-                {resendCooldown > 0 ? `Gửi lại mã (${resendCooldown}s)` : 'Gửi lại mã OTP 🔄'}
+                {resendCooldown > 0 ? (
+                  `Gửi lại mã (${resendCooldown}s)`
+                ) : (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    Gửi lại mã OTP <SyncIcon size={13} />
+                  </span>
+                )}
               </button>
             </div>
           </div>
@@ -631,7 +659,9 @@ const TuitionPayment = () => {
         <div className="receipt-card" style={{ maxWidth: '600px', margin: '0 auto', width: '100%' }}>
           {result.success ? (
             <div>
-              <div className="receipt-success-badge">✓</div>
+              <div className="receipt-success-badge">
+                <CheckIcon size={24} />
+              </div>
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <span className="badge badge-success" style={{ marginBottom: '0.5rem' }}>
                   Giao dịch thành công
@@ -681,10 +711,10 @@ const TuitionPayment = () => {
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   onClick={() => window.print()}
                 >
-                  🖨️ In biên lai
+                  <PrinterIcon size={16} /> In biên lai
                 </button>
                 <button
                   type="button"
@@ -698,14 +728,17 @@ const TuitionPayment = () => {
             </div>
           ) : (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>❌</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem', color: '#e11d48' }}>
+                <XCircleIcon size={56} />
+              </div>
               <h2 style={{ color: '#e11d48', marginBottom: '0.5rem' }}>Giao dịch thất bại</h2>
               <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
                 {result.message}
               </p>
 
-              <div style={{ background: '#fef2f2', border: '1px solid #fecdd3', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.85rem', color: '#9f1239' }}>
-                💡 Hệ thống đã tự động thực hiện cơ chế bù trừ (Saga Rollback) để bảo vệ số dư tài khoản của bạn.
+              <div style={{ background: '#fef2f2', border: '1px solid #fecdd3', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.85rem', color: '#9f1239', display: 'flex', alignItems: 'flex-start', gap: '8px', textAlign: 'left' }}>
+                <InfoIcon size={18} style={{ flexShrink: 0, marginTop: '2px', color: '#e11d48' }} />
+                <span>Hệ thống đã tự động thực hiện cơ chế bù trừ (Saga Rollback) để bảo vệ số dư tài khoản của bạn.</span>
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem' }}>
